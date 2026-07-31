@@ -1,11 +1,11 @@
 -- ============================================================
 -- BANCO DE DADOS: Controle de Estoque
 -- ============================================================
-CREATE DATABASE IF NOT EXISTS db_estoque CHARACTER
+CREATE DATABASE IF NOT EXISTS db_techparts CHARACTER
 SET
     utf8mb4 COLLATE utf8mb4_unicode_ci;
 
-USE db_estoque;
+USE db_techparts;
 
 -- ============================================================
 -- CATEGORIAS

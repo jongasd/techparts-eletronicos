@@ -24,6 +24,7 @@ app.use("/entradas", require("./routes/entradaRoute"));
 app.use("/saidas", require("./routes/saidaRoute"));
 app.use("/ajustes", require("./routes/ajusteRoute"));
 app.use("/devolucoes", require("./routes/devolucaoRoute"));
+app.use("/dashboard", require("./routes/dashboardRoute"));
 
 app.use(require("./middlewares/errorHandle"));
 
