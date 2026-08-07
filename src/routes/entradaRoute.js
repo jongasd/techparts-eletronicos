@@ -1,11 +1,31 @@
 const express = require("express");
 const router = express.Router();
-const ajusteController = require("../controllers/ajusteController");
+const entradaController = require("../controllers/entradaController");
+const auth = require("../middlewares/auth");
+const autorizar = require("../middlewares/autorizar");
 
-router.get("/", ajusteController.listarTodas);
-router.get("/:id", ajusteController.buscarPorId);
-router.post("/", ajusteController.criar);
-router.put("/:id", ajusteController.atualizar);
-router.delete("/:id", ajusteController.excluir);
+router.use(auth);
+
+router.get(
+  "/",
+  autorizar("entradas", "visualizar"),
+  entradaController.listarTodas,
+);
+router.get(
+  "/:id",
+  autorizar("entradas", "visualizar"),
+  entradaController.buscarPorId,
+);
+router.post("/", autorizar("entradas", "criar"), entradaController.criar);
+router.put(
+  "/:id",
+  autorizar("entradas", "editar"),
+  entradaController.atualizar,
+);
+router.delete(
+  "/:id",
+  autorizar("entradas", "excluir"),
+  entradaController.excluir,
+);
 
 module.exports = router;

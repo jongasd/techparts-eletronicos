@@ -1,11 +1,21 @@
 const express = require("express");
 const router = express.Router();
 const ajusteController = require("../controllers/ajusteController");
+const auth = require("../middlewares/auth");
+const autorizar = require("../middlewares/autorizar");
 
-router.get("/", ajusteController.listarTodas);
-router.get("/:id", ajusteController.buscarPorId);
-router.post("/", ajusteController.criar);
-router.put("/:id", ajusteController.atualizar);
-router.delete("/:id", ajusteController.excluir);
+router.use(auth);
+
+router.get(
+  "/",
+  autorizar("ajustes", "visualizar"),
+  ajusteController.listarTodos,
+);
+router.get(
+  "/:id",
+  autorizar("ajustes", "visualizar"),
+  ajusteController.buscarPorId,
+);
+router.post("/", autorizar("ajustes", "criar"), ajusteController.criar);
 
 module.exports = router;

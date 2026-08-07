@@ -168,3 +168,105 @@ CREATE INDEX idx_saida_cliente ON tbl_saida (id_cliente);
 CREATE INDEX idx_ajuste_produto_data ON tbl_ajuste (id_produto, data_ajuste);
 
 CREATE INDEX idx_devolucao_saida ON tbl_devolucao (id_saida);
+
+ALTER TABLE tbl_funcionario
+  ADD COLUMN login VARCHAR(60) NOT NULL AFTER nome_funcionario,
+  ADD COLUMN senha_hash VARCHAR(255) NOT NULL AFTER login,
+  ADD UNIQUE KEY uq_funcionario_login (login);
+  CREATE TABLE tbl_roles (
+    id_role INT NOT NULL AUTO_INCREMENT,
+    nome_role VARCHAR(50) NOT NULL,
+    PRIMARY KEY (id_role),
+    UNIQUE KEY uq_role_nome (nome_role)
+);
+
+CREATE TABLE tbl_permissoes (
+    id_permissao INT NOT NULL AUTO_INCREMENT,
+    recurso VARCHAR(50) NOT NULL,   -- ex: 'produtos', 'entradas', 'dashboard'
+    acao VARCHAR(20) NOT NULL,       -- ex: 'visualizar', 'criar', 'editar', 'excluir'
+    PRIMARY KEY (id_permissao),
+    UNIQUE KEY uq_permissao (recurso, acao)
+);
+
+CREATE TABLE tbl_role_permissao (
+    id_role INT NOT NULL,
+    id_permissao INT NOT NULL,
+    PRIMARY KEY (id_role, id_permissao),
+    CONSTRAINT fk_rp_role FOREIGN KEY (id_role) REFERENCES tbl_roles (id_role),
+    CONSTRAINT fk_rp_permissao FOREIGN KEY (id_permissao) REFERENCES tbl_permissoes (id_permissao)
+);
+
+ALTER TABLE tbl_funcionario
+  ADD COLUMN login VARCHAR(60) NOT NULL AFTER nome_funcionario,
+  ADD COLUMN senha_hash VARCHAR(255) NOT NULL AFTER login,
+  ADD COLUMN id_role INT NOT NULL AFTER senha_hash,
+  ADD UNIQUE KEY uq_funcionario_login (login),
+  ADD CONSTRAINT fk_funcionario_role FOREIGN KEY (id_role) REFERENCES tbl_roles (id_role);
+
+-- Seed: papel único "admin" com acesso total, pra sistema funcionar
+-- enquanto a matriz de papéis real não é definida. Isso é stopgap, não
+-- proposta de design final.
+INSERT INTO tbl_roles (nome_role) VALUES ('admin');
+
+INSERT INTO tbl_permissoes (recurso, acao)
+SELECT recurso, acao FROM (
+  SELECT 'categorias' AS recurso, 'visualizar' AS acao UNION ALL
+  SELECT 'categorias', 'criar' UNION ALL
+  SELECT 'categorias', 'editar' UNION ALL
+  SELECT 'categorias', 'excluir' UNION ALL
+  SELECT 'produtos', 'visualizar' UNION ALL
+  SELECT 'produtos', 'criar' UNION ALL
+  SELECT 'produtos', 'editar' UNION ALL
+  SELECT 'produtos', 'excluir' UNION ALL
+  SELECT 'funcionarios', 'visualizar' UNION ALL
+  SELECT 'funcionarios', 'criar' UNION ALL
+  SELECT 'funcionarios', 'editar' UNION ALL
+  SELECT 'funcionarios', 'excluir' UNION ALL
+  SELECT 'clientes', 'visualizar' UNION ALL
+  SELECT 'clientes', 'criar' UNION ALL
+  SELECT 'clientes', 'editar' UNION ALL
+  SELECT 'clientes', 'excluir' UNION ALL
+  SELECT 'entradas', 'visualizar' UNION ALL
+  SELECT 'entradas', 'criar' UNION ALL
+  SELECT 'entradas', 'editar' UNION ALL
+  SELECT 'entradas', 'excluir' UNION ALL
+  SELECT 'saidas', 'visualizar' UNION ALL
+  SELECT 'saidas', 'criar' UNION ALL
+  SELECT 'saidas', 'editar' UNION ALL
+  SELECT 'saidas', 'excluir' UNION ALL
+  SELECT 'ajustes', 'visualizar' UNION ALL
+  SELECT 'ajustes', 'criar' UNION ALL
+  SELECT 'devolucoes', 'visualizar' UNION ALL
+  SELECT 'devolucoes', 'criar' UNION ALL
+  SELECT 'dashboard', 'visualizar'
+) AS p;
+
+INSERT INTO tbl_role_permissao (id_role, id_permissao)
+SELECT (SELECT id_role FROM tbl_roles WHERE nome_role = 'admin'), id_permissao
+FROM tbl_permissoes;
+INSERT INTO tbl_roles (nome_role) VALUES ('gerente'), ('funcionario');
+
+-- GERENTE: acesso total exceto gestão de funcionários (só visualizar)
+INSERT INTO tbl_role_permissao (id_role, id_permissao)
+SELECT (SELECT id_role FROM tbl_roles WHERE nome_role = 'gerente'), id_permissao
+FROM tbl_permissoes
+WHERE NOT (recurso = 'funcionarios' AND acao IN ('criar', 'editar', 'excluir'));
+
+-- FUNCIONÁRIO: operação do dia a dia — sem gestão de funcionários,
+-- sem editar/excluir produtos e categorias (só visualizar)
+INSERT INTO tbl_role_permissao (id_role, id_permissao)
+SELECT (SELECT id_role FROM tbl_roles WHERE nome_role = 'funcionario'), id_permissao
+FROM tbl_permissoes
+WHERE (recurso = 'categorias' AND acao = 'visualizar')
+   OR (recurso = 'produtos' AND acao = 'visualizar')
+   OR (recurso = 'clientes' AND acao IN ('visualizar', 'criar', 'editar'))
+   OR (recurso IN ('entradas', 'saidas') AND acao IN ('visualizar', 'criar'))
+   OR (recurso IN ('ajustes', 'devolucoes') AND acao IN ('visualizar', 'criar'))
+   OR (recurso = 'dashboard' AND acao = 'visualizar');
+
+-- Rodar uma vez, manualmente, após criar as roles.
+-- Troque a senha antes de rodar — gere o hash com:
+-- node -e "require('bcrypt').hash('SUASENHA', 10).then(console.log)"
+INSERT INTO tbl_funcionario (nome_funcionario, login, senha_hash, id_role, ativo)
+VALUES ('Administrador Inicial', 'admin', '<COLE_O_HASH_AQUI>',
+        (SELECT id_role FROM tbl_roles WHERE nome_role = 'admin'), 1);

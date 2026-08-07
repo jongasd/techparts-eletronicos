@@ -1,14 +1,11 @@
 const pool = require("../config/database");
 
-const executarQuery = (sql, valores = []) =>
-  new Promise((resolve, reject) => {
-    pool.query(sql, valores, (erro, resultado) => {
-      if (erro) return reject(erro);
-      resolve(resultado);
-    });
-  });
+const executarQuery = async (sql, valores = [], conn = pool) => {
+  const [resultado] = await conn.query(sql, valores);
+  return resultado;
+};
 
-const CAMPOS_PUBLICOS = "id_funcionario, nome_funcionario, ativo";
+const CAMPOS_PUBLICOS = "id_funcionario, nome_funcionario, login, ativo";
 
 const Funcionario = {
   findAll: () =>
@@ -28,6 +25,16 @@ const Funcionario = {
     const resultado = await executarQuery(
       `SELECT ${CAMPOS_PUBLICOS} FROM tbl_funcionario WHERE nome_funcionario = ?`,
       [nome],
+    );
+    return resultado[0] ?? null;
+  },
+
+  // Único método que retorna senha_hash — nunca expor isso em resposta HTTP.
+  // Usado só internamente pelo authService pra comparar a senha no login.
+  findByLoginComSenha: async (login) => {
+    const resultado = await executarQuery(
+      "SELECT id_funcionario, nome_funcionario, login, senha_hash, ativo FROM tbl_funcionario WHERE login = ?",
+      [login],
     );
     return resultado[0] ?? null;
   },
