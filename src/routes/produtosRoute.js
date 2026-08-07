@@ -6,6 +6,6 @@ router.get("/", produtoController.listarTodas);
 router.get("/:id", produtoController.buscarPorId);
 router.post("/", produtoController.criar);
 router.put("/:id", produtoController.atualizar);
-router.delete("/:id", produtoController.excluir);
+router.put("/:id/desativar", produtoController.desativar);
 
 module.exports = router;

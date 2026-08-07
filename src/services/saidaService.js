@@ -1,4 +1,6 @@
 const Saida = require("../models/saida");
+const Produto = require("../models/produtos");
+const pool = require("../config/database");
 const AppError = require("../utils/appError");
 
 const CAMPOS_OBRIGATORIOS_CRIACAO = [
@@ -23,7 +25,6 @@ const validarCamposObrigatorios = (dados) => {
       dados[campo] === null ||
       dados[campo] === "",
   );
-
   if (faltando.length > 0) {
     throw new AppError(
       `Campos obrigatórios ausentes: ${faltando.join(", ")}`,
@@ -36,7 +37,6 @@ const validarItens = (itens) => {
   if (!Array.isArray(itens) || itens.length === 0) {
     throw new AppError("É necessário informar ao menos um item na saída", 400);
   }
-
   itens.forEach((item, index) => {
     if (!item.id_produto || !item.quantidade) {
       throw new AppError(
@@ -59,11 +59,9 @@ const saidaService = {
   buscarPorId: async (id) => {
     const idValido = parseId(id);
     const saida = await Saida.findById(idValido);
-
     if (!saida) {
       throw new AppError("Saída não encontrada", 404);
     }
-
     const itens = await Saida.findItensBySaida(idValido);
     return { ...saida, itens };
   },
@@ -72,29 +70,62 @@ const saidaService = {
     validarCamposObrigatorios(body);
     validarItens(body.itens);
 
-    const dadosSaida = {
-      id_cliente: Number(body.id_cliente),
-      id_funcionario: Number(body.id_funcionario),
-      data_saida: String(body.data_saida),
-      observacao: body.observacao ? String(body.observacao).trim() : null,
-    };
+    const conn = await pool.getConnection();
+    try {
+      await conn.beginTransaction();
 
-    const novoId = await Saida.create(dadosSaida);
+      const dadosSaida = {
+        id_cliente: Number(body.id_cliente),
+        id_funcionario: Number(body.id_funcionario),
+        data_saida: String(body.data_saida),
+        observacao: body.observacao ? String(body.observacao).trim() : null,
+      };
 
-    for (const item of body.itens) {
-      await Saida.createItem({
-        id_saida: novoId,
-        id_produto: Number(item.id_produto),
-        quantidade: Number(item.quantidade),
-      });
+      const novoId = await Saida.create(dadosSaida, conn);
+
+      for (const item of body.itens) {
+        const idProduto = Number(item.id_produto);
+        const quantidade = Number(item.quantidade);
+
+        const produto = await Produto.findById(idProduto, conn);
+        if (!produto) {
+          throw new AppError(`Produto ${idProduto} não encontrado`, 404);
+        }
+
+        // decrementa ANTES de criar o item: se não houver saldo, aborta sem
+        // deixar item órfão. affectedRows = 0 cobre tanto "saldo insuficiente"
+        // quanto concorrência (outra saída consumiu o estoque entre o findById
+        // e aqui) — o WHERE quantidade_estoque >= ? é a trava real, não o findById.
+        const sucesso = await Produto.decrementarEstoque(
+          idProduto,
+          quantidade,
+          conn,
+        );
+        if (!sucesso) {
+          throw new AppError(
+            `Estoque insuficiente para o produto "${produto.nome_produto}" (disponível: ${produto.quantidade_estoque}, solicitado: ${quantidade})`,
+            400,
+          );
+        }
+
+        await Saida.createItem(
+          { id_saida: novoId, id_produto: idProduto, quantidade },
+          conn,
+        );
+      }
+
+      await conn.commit();
+      return novoId;
+    } catch (erro) {
+      await conn.rollback();
+      throw erro;
+    } finally {
+      conn.release();
     }
-
-    return novoId;
   },
 
   atualizar: async (id, body) => {
     const idValido = parseId(id);
-
     const saida = await Saida.findById(idValido);
     if (!saida) {
       throw new AppError("Saída não encontrada", 404);
@@ -121,28 +152,18 @@ const saidaService = {
     }
 
     if (body.itens) {
-      validarItens(body.itens);
-      await Saida.deleteItensBySaida(idValido);
-      for (const item of body.itens) {
-        await Saida.createItem({
-          id_saida: idValido,
-          id_produto: Number(item.id_produto),
-          quantidade: Number(item.quantidade),
-        });
-      }
+      throw new AppError(
+        "Atualização de itens de saída está desabilitada: reversão de estoque ainda não implementada",
+        501,
+      );
     }
   },
 
-  excluir: async (id) => {
-    const idValido = parseId(id);
-
-    const saida = await Saida.findById(idValido);
-    if (!saida) {
-      throw new AppError("Saída não encontrada", 404);
-    }
-
-    await Saida.deleteItensBySaida(idValido);
-    await Saida.delete(idValido);
+  excluir: async () => {
+    throw new AppError(
+      "Exclusão de saída está desabilitada: reversão de estoque ainda não implementada",
+      501,
+    );
   },
 };
 

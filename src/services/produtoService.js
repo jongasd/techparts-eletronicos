@@ -17,14 +17,15 @@ const CAMPOS_ATUALIZAVEIS = [
   "quantidade_minima",
   "localizacao",
   "preco",
-  "ativo",
+  // "ativo" removido de propósito: mudança de status só passa por
+  // desativar()/ativar(), que têm validação própria (não deixa desativar
+  // duas vezes, etc). Se "ativo" vier no body de um PUT /:id, é ignorado
+  // silenciosamente — ver nota abaixo.
 ];
+// Campos que são texto de verdade — os demais são numéricos e não devem
+// passar por String().trim(), senão vira "50" em vez de 50 no UPDATE.
+const CAMPOS_TEXTO = ["nome_produto", "localizacao"];
 
-/**
- * Valida e converte um ID recebido como string/number.
- * @param {*} id
- * @returns {number}
- */
 const parseId = (id) => {
   const parsed = Number(id);
   if (!Number.isInteger(parsed) || parsed <= 0) {
@@ -33,10 +34,6 @@ const parseId = (id) => {
   return parsed;
 };
 
-/**
- * Garante que todos os campos obrigatórios estão presentes.
- * @param {Object} dados
- */
 const validarCamposObrigatorios = (dados) => {
   const faltando = CAMPOS_OBRIGATORIOS_CRIACAO.filter(
     (campo) =>
@@ -44,7 +41,6 @@ const validarCamposObrigatorios = (dados) => {
       dados[campo] === null ||
       dados[campo] === "",
   );
-
   if (faltando.length > 0) {
     throw new AppError(
       `Campos obrigatórios ausentes: ${faltando.join(", ")}`,
@@ -53,16 +49,14 @@ const validarCamposObrigatorios = (dados) => {
   }
 };
 
-/**
- * Extrai e sanitiza apenas os campos permitidos para atualização.
- * @param {Object} body
- * @returns {Object}
- */
 const extrairCamposAtualizaveis = (body) => {
   return CAMPOS_ATUALIZAVEIS.reduce((acc, campo) => {
-    if (body[campo] !== undefined && body[campo] !== "") {
-      acc[campo] = String(body[campo]).trim();
-    }
+    if (body[campo] === undefined || body[campo] === "") return acc;
+
+    acc[campo] = CAMPOS_TEXTO.includes(campo)
+      ? String(body[campo]).trim()
+      : Number(body[campo]);
+
     return acc;
   }, {});
 };
@@ -114,13 +108,28 @@ const produtoService = {
     await Produto.update(idValido, dadosAtualizados);
   },
 
-  excluir: async (id) => {
+  desativar: async (id) => {
     const idValido = parseId(id);
-    const resultado = await Produto.delete(idValido);
-
-    if (resultado.affectedRows === 0) {
+    const produto = await Produto.findById(idValido);
+    if (!produto) {
       throw new AppError("Produto não encontrado", 404);
     }
+    if (produto.ativo === 0) {
+      throw new AppError("Produto já está desativado", 400);
+    }
+    await Produto.desativar(idValido);
+  },
+
+  ativar: async (id) => {
+    const idValido = parseId(id);
+    const produto = await Produto.findById(idValido);
+    if (!produto) {
+      throw new AppError("Produto não encontrado", 404);
+    }
+    if (produto.ativo === 1) {
+      throw new AppError("Produto já está ativo", 400);
+    }
+    await Produto.ativar(idValido);
   },
 };
 

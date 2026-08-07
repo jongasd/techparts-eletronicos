@@ -41,10 +41,10 @@ const produtoController = {
     }
   },
 
-  excluir: async (req, res, next) => {
+  desativar: async (req, res, next) => {
     try {
-      await produtoService.excluir(req.params.id);
-      res.json({ sucesso: true, mensagem: "Produto excluído com sucesso" });
+      await produtoService.desativar(req.params.id);
+      res.json({ sucesso: true, mensagem: "Produto desativado com sucesso" });
     } catch (erro) {
       next(erro);
     }
