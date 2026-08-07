@@ -33,8 +33,8 @@ const Produto = {
   
   findByName: async (name) => {
     const resultado = await executarQuery(
-      "SELECT * FROM tbl_produtos WHERE name = ?",
-      [name],
+      "SELECT * FROM tbl_produtos WHERE nome_produto = ?",
+      [name ],
     );
     return resultado[0] ?? null;
   },

@@ -91,7 +91,7 @@ const produtoService = {
       quantidade_minima: Number(body.quantidade_minima),
       localizacao: body.localizacao ? String(body.localizacao).trim() : null,
       preco: Number(body.preco),
-      ativo: String(body.ativo).trim(),
+      ativo: Number(body.ativo),
     };
 
     return await Produto.create(dados);
