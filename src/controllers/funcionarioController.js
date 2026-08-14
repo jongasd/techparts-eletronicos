@@ -1,9 +1,9 @@
 const funcionarioService = require("../services/funcionarioService");
 
 const funcionarioController = {
-  listarTodos: async (req, res, next) => {
+  listarTodas: async (req, res, next) => {
     try {
-      const funcionarios = await funcionarioService.listarTodos();
+      const funcionarios = await funcionarioService.listarTodas();
       res.json({
         sucesso: true,
         dados: funcionarios,

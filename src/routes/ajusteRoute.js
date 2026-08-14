@@ -9,7 +9,7 @@ router.use(auth);
 router.get(
   "/",
   autorizar("ajustes", "visualizar"),
-  ajusteController.listarTodos,
+  ajusteController.listarTodas,
 );
 router.get(
   "/:id",

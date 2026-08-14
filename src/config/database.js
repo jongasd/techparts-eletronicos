@@ -1,5 +1,10 @@
+// src/config/database.js
+const path = require("path");
 const mysql = require("mysql2");
-require("dotenv").config();
+
+require("dotenv").config({
+  path: path.resolve(__dirname, "../../.env"), // sobe de src/config até a raiz
+});
 
 const pool = mysql.createPool({
   host: process.env.DB_HOST,

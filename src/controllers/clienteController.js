@@ -1,9 +1,9 @@
 const clienteService = require("../services/clienteService");
 
 const clienteController = {
-  listarTodos: async (req, res, next) => {
+  listarTodas: async (req, res, next) => {
     try {
-      const clientes = await clienteService.listarTodos();
+      const clientes = await clienteService.listarTodas();
       res.json({ sucesso: true, dados: clientes, total: clientes.length });
     } catch (erro) {
       next(erro);
