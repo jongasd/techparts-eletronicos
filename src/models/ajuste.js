@@ -1,12 +1,9 @@
 const pool = require("../config/database");
 
-const executarQuery = (sql, valores = []) =>
-  new Promise((resolve, reject) => {
-    pool.query(sql, valores, (erro, resultado) => {
-      if (erro) return reject(erro);
-      resolve(resultado);
-    });
-  });
+const executarQuery = async (sql, valores = [], conn = pool) => {
+  const [resultado] = await conn.query(sql, valores);
+  return resultado;
+};
 
 const Ajuste = {
   findAll: () =>
@@ -27,7 +24,7 @@ const Ajuste = {
       ORDER BY a.data_ajuste DESC
     `),
 
-  findById: async (id) => {
+  findById: async (id, conn) => {
     const resultado = await executarQuery(
       `
       SELECT
@@ -45,30 +42,26 @@ const Ajuste = {
       INNER JOIN tbl_funcionario f ON f.id_funcionario = a.id_funcionario
       WHERE a.id_ajuste = ?
       `,
-      [id]
+      [id],
+      conn,
     );
     return resultado[0] ?? null;
   },
 
-  create: async (dados) => {
+  create: async (dados, conn) => {
     const resultado = await executarQuery(
       "INSERT INTO tbl_ajuste SET ?",
-      [dados]
+      [dados],
+      conn,
     );
     return resultado.insertId;
   },
 
   update: (id, dados) =>
-    executarQuery(
-      "UPDATE tbl_ajuste SET ? WHERE id_ajuste = ?",
-      [dados, id]
-    ),
+    executarQuery("UPDATE tbl_ajuste SET ? WHERE id_ajuste = ?", [dados, id]),
 
   delete: (id) =>
-    executarQuery(
-      "DELETE FROM tbl_ajuste WHERE id_ajuste = ?",
-      [id]
-    ),
+    executarQuery("DELETE FROM tbl_ajuste WHERE id_ajuste = ?", [id]),
 };
 
 module.exports = Ajuste;

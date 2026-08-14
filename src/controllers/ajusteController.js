@@ -1,10 +1,10 @@
-const devolucaoService = require("../services/devolucaoService");
+const ajusteService = require("../services/ajusteService");
 
-const devolucaoController = {
-  listarTodas: async (req, res, next) => {
+const ajusteController = {
+  listarTodos: async (req, res, next) => {
     try {
-      const devolucoes = await devolucaoService.listarTodas();
-      res.json({ sucesso: true, dados: devolucoes, total: devolucoes.length });
+      const ajustes = await ajusteService.listarTodos();
+      res.json({ sucesso: true, dados: ajustes, total: ajustes.length });
     } catch (erro) {
       next(erro);
     }
@@ -12,8 +12,8 @@ const devolucaoController = {
 
   buscarPorId: async (req, res, next) => {
     try {
-      const devolucao = await devolucaoService.buscarPorId(req.params.id);
-      res.json({ sucesso: true, dados: devolucao });
+      const ajuste = await ajusteService.buscarPorId(req.params.id);
+      res.json({ sucesso: true, dados: ajuste });
     } catch (erro) {
       next(erro);
     }
@@ -21,10 +21,10 @@ const devolucaoController = {
 
   criar: async (req, res, next) => {
     try {
-      const novoId = await devolucaoService.criar(req.body);
+      const novoId = await ajusteService.criar(req.body);
       res.status(201).json({
         sucesso: true,
-        mensagem: "Devolução criada com sucesso",
+        mensagem: "Ajuste criado com sucesso",
         id: novoId,
       });
     } catch (erro) {
@@ -34,8 +34,8 @@ const devolucaoController = {
 
   atualizar: async (req, res, next) => {
     try {
-      await devolucaoService.atualizar(req.params.id, req.body);
-      res.json({ sucesso: true, mensagem: "Devolução atualizada com sucesso" });
+      await ajusteService.atualizar(req.params.id, req.body);
+      res.json({ sucesso: true, mensagem: "Ajuste atualizado com sucesso" });
     } catch (erro) {
       next(erro);
     }
@@ -43,12 +43,12 @@ const devolucaoController = {
 
   excluir: async (req, res, next) => {
     try {
-      await devolucaoService.excluir(req.params.id);
-      res.json({ sucesso: true, mensagem: "Devolução excluída com sucesso" });
+      await ajusteService.excluir(req.params.id);
+      res.json({ sucesso: true, mensagem: "Ajuste excluído com sucesso" });
     } catch (erro) {
       next(erro);
     }
   },
 };
 
-module.exports = devolucaoController;
+module.exports = ajusteController;

@@ -17,5 +17,11 @@ router.get(
   ajusteController.buscarPorId,
 );
 router.post("/", autorizar("ajustes", "criar"), ajusteController.criar);
+router.put("/:id", autorizar("ajustes", "editar"), ajusteController.atualizar);
+router.delete(
+  "/:id",
+  autorizar("ajustes", "excluir"),
+  ajusteController.excluir,
+);
 
 module.exports = router;
