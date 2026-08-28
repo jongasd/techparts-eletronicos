@@ -1,4 +1,4 @@
-const app = require("./app"); // Importa as configurações do app.js
+  const app = require("./app"); // Importa as configurações do app.js
 require("dotenv").config()
 
 const PORT = process.env.PORT || 3000;

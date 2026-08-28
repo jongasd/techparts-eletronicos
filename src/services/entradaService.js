@@ -1,5 +1,6 @@
 const Entrada = require("../models/entrada");
 const Produto = require("../models/produtos");
+const Lote = require("../models/lote");
 const pool = require("../config/database");
 const AppError = require("../utils/appError");
 
@@ -54,6 +55,16 @@ const validarItens = (itens) => {
         400,
       );
     }
+    // data_validade é opcional, mas se vier tem que ser uma data válida
+    if (item.data_validade !== undefined && item.data_validade !== null) {
+      const data = new Date(item.data_validade);
+      if (Number.isNaN(data.getTime())) {
+        throw new AppError(
+          `Item na posição ${index + 1} possui data_validade inválida`,
+          400,
+        );
+      }
+    }
   });
 };
 
@@ -95,7 +106,9 @@ const entradaService = {
           throw new AppError(`Produto ${idProduto} não encontrado`, 404);
         }
 
-        await Entrada.createItem(
+        // ⚠️ depende de Entrada.createItem retornar o insertId (result.insertId).
+        // Se o model atual não fizer isso, ajuste-o antes de usar o lote em produção.
+        const idItemEntrada = await Entrada.createItem(
           {
             id_entrada: novoId,
             id_produto: idProduto,
@@ -106,6 +119,14 @@ const entradaService = {
         );
 
         await Produto.incrementarEstoque(idProduto, quantidade, conn);
+
+        await Lote.criar(conn, {
+          id_produto: idProduto,
+          id_item_entrada: idItemEntrada,
+          numero_lote: item.numero_lote ?? null,
+          quantidade,
+          data_validade: item.data_validade ?? null,
+        });
       }
 
       await conn.commit();
@@ -118,7 +139,7 @@ const entradaService = {
     }
   },
 
-  // atualizar/excluir: NÃO tocam em quantidade_estoque hoje. Ver ressalva na resposta.
+  // atualizar/excluir: NÃO tocam em quantidade_estoque nem em lotes hoje. Ver ressalva na resposta.
   atualizar: async (id, body) => {
     const idValido = parseId(id);
     const entrada = await Entrada.findById(idValido);
@@ -146,7 +167,7 @@ const entradaService = {
 
     if (body.itens) {
       throw new AppError(
-        "Atualização de itens de entrada está desabilitada: reversão de estoque ainda não implementada",
+        "Atualização de itens de entrada está desabilitada: reversão de estoque e lote ainda não implementada",
         501,
       );
     }
@@ -154,7 +175,7 @@ const entradaService = {
 
   excluir: async (id) => {
     throw new AppError(
-      "Exclusão de entrada está desabilitada: reversão de estoque ainda não implementada",
+      "Exclusão de entrada está desabilitada: reversão de estoque e lote ainda não implementada",
       501,
     );
   },

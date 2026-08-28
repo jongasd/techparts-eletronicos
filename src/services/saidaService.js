@@ -1,5 +1,6 @@
 const Saida = require("../models/saida");
 const Produto = require("../models/produtos");
+const Lote = require("../models/lote");
 const pool = require("../config/database");
 const AppError = require("../utils/appError");
 
@@ -93,9 +94,8 @@ const saidaService = {
         }
 
         // decrementa ANTES de criar o item: se não houver saldo, aborta sem
-        // deixar item órfão. affectedRows = 0 cobre tanto "saldo insuficiente"
-        // quanto concorrência (outra saída consumiu o estoque entre o findById
-        // e aqui) — o WHERE quantidade_estoque >= ? é a trava real, não o findById.
+        // deixar item órfão. O WHERE quantidade_estoque >= ? é a trava real
+        // contra concorrência, não o findById acima.
         const sucesso = await Produto.decrementarEstoque(
           idProduto,
           quantidade,
@@ -108,10 +108,35 @@ const saidaService = {
           );
         }
 
-        await Saida.createItem(
+        const idItemSaida = await Saida.createItem(
           { id_saida: novoId, id_produto: idProduto, quantidade },
           conn,
         );
+
+        // consumo FIFO dos lotes: FOR UPDATE trava as linhas retornadas até o
+        // commit, então duas saídas concorrentes não conseguem consumir o
+        // mesmo saldo de lote ao mesmo tempo.
+        const lotes = await Lote.buscarLotesDisponiveisParaAtualizacao(
+          conn,
+          idProduto,
+        );
+        let restante = quantidade;
+        for (const lote of lotes) {
+          if (restante <= 0) break;
+          const abater = Math.min(lote.quantidade_atual, restante);
+          await Lote.abaterQuantidade(conn, lote.id_lote, abater);
+          await Lote.registrarConsumo(conn, idItemSaida, lote.id_lote, abater);
+          restante -= abater;
+        }
+        if (restante > 0) {
+          // decrementarEstoque já passou (então o agregado tem saldo), mas os
+          // lotes não bateram — normalmente indica produto com estoque legado
+          // sem lote de migração correspondente. Ver ressalva na resposta.
+          throw new AppError(
+            `Inconsistência entre estoque agregado e lotes disponíveis para o produto "${produto.nome_produto}"`,
+            500,
+          );
+        }
       }
 
       await conn.commit();
@@ -153,7 +178,7 @@ const saidaService = {
 
     if (body.itens) {
       throw new AppError(
-        "Atualização de itens de saída está desabilitada: reversão de estoque ainda não implementada",
+        "Atualização de itens de saída está desabilitada: reversão de estoque e lote ainda não implementada",
         501,
       );
     }
@@ -161,7 +186,7 @@ const saidaService = {
 
   excluir: async () => {
     throw new AppError(
-      "Exclusão de saída está desabilitada: reversão de estoque ainda não implementada",
+      "Exclusão de saída está desabilitada: reversão de estoque e lote ainda não implementada",
       501,
     );
   },

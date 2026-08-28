@@ -24,7 +24,7 @@ app.use("/saidas", require("./routes/saidaRoute"));
 app.use("/ajustes", require("./routes/ajusteRoute"));
 app.use("/devolucoes", require("./routes/devolucaoRoute"));
 app.use("/dashboard", require("./routes/dashboardRoute"));
-
+app.use('/lotes', require('./routes/lotes'));
 app.use(require("./middlewares/errorHandle"));
 
 module.exports = app;
