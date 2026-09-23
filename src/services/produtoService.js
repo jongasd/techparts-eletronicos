@@ -7,8 +7,11 @@ const CAMPOS_OBRIGATORIOS_CRIACAO = [
   "quantidade_estoque",
   "quantidade_minima",
   "preco",
-  "ativo",
 ];
+// "ativo" saiu da lista de obrigatórios: na criação ele tem default (1) e,
+// se vier explícito, é validado como 0 ou 1 — ver criar(). Isso evita que
+// um POST crie produto já inativo por fora do fluxo de desativar()/ativar(),
+// que são os únicos lugares com a validação de "não desativar duas vezes".
 
 const CAMPOS_ATUALIZAVEIS = [
   "id_categoria",
@@ -18,12 +21,12 @@ const CAMPOS_ATUALIZAVEIS = [
   "localizacao",
   "preco",
   // "ativo" removido de propósito: mudança de status só passa por
-  // desativar()/ativar(), que têm validação própria (não deixa desativar
-  // duas vezes, etc). Se "ativo" vier no body de um PUT /:id, é ignorado
-  // silenciosamente — ver nota abaixo.
+  // desativar()/ativar(). Se "ativo" vier no body de um PUT /:id, é
+  // ignorado silenciosamente.
 ];
-// Campos que são texto de verdade — os demais são numéricos e não devem
-// passar por String().trim(), senão vira "50" em vez de 50 no UPDATE.
+
+// Campos que são texto de verdade — os demais são numéricos e passam por
+// parseNumero, não por String().trim().
 const CAMPOS_TEXTO = ["nome_produto", "localizacao"];
 
 const parseId = (id) => {
@@ -32,6 +35,16 @@ const parseId = (id) => {
     throw new AppError("ID inválido", 400);
   }
   return parsed;
+};
+
+// Antes: Number(valor) direto, e um preço/quantidade inválido virava NaN
+// silenciosamente e ia pro UPDATE/INSERT sem erro nenhum. Agora rejeita.
+const parseNumero = (campo, valor) => {
+  const numero = Number(valor);
+  if (Number.isNaN(numero) || !Number.isFinite(numero)) {
+    throw new AppError(`Campo "${campo}" precisa ser um número válido`, 400);
+  }
+  return numero;
 };
 
 const validarCamposObrigatorios = (dados) => {
@@ -51,11 +64,17 @@ const validarCamposObrigatorios = (dados) => {
 
 const extrairCamposAtualizaveis = (body) => {
   return CAMPOS_ATUALIZAVEIS.reduce((acc, campo) => {
-    if (body[campo] === undefined || body[campo] === "") return acc;
+    if (
+      body[campo] === undefined ||
+      body[campo] === "" ||
+      body[campo] === null
+    ) {
+      return acc;
+    }
 
     acc[campo] = CAMPOS_TEXTO.includes(campo)
       ? String(body[campo]).trim()
-      : Number(body[campo]);
+      : parseNumero(campo, body[campo]);
 
     return acc;
   }, {});
@@ -78,14 +97,25 @@ const produtoService = {
   criar: async (body) => {
     validarCamposObrigatorios(body);
 
+    const ativo = body.ativo === undefined ? 1 : Number(body.ativo);
+    if (![0, 1].includes(ativo)) {
+      throw new AppError('Campo "ativo" precisa ser 0 ou 1', 400);
+    }
+
     const dados = {
-      id_categoria: Number(body.id_categoria),
-      nome_produto: String(body.nome_produto),
-      quantidade_estoque: Number(body.quantidade_estoque),
-      quantidade_minima: Number(body.quantidade_minima),
+      id_categoria: parseNumero("id_categoria", body.id_categoria),
+      nome_produto: String(body.nome_produto).trim(),
+      quantidade_estoque: parseNumero(
+        "quantidade_estoque",
+        body.quantidade_estoque,
+      ),
+      quantidade_minima: parseNumero(
+        "quantidade_minima",
+        body.quantidade_minima,
+      ),
       localizacao: body.localizacao ? String(body.localizacao).trim() : null,
-      preco: Number(body.preco),
-      ativo: Number(body.ativo),
+      preco: parseNumero("preco", body.preco),
+      ativo,
     };
 
     return await Produto.create(dados);

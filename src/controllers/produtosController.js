@@ -49,6 +49,17 @@ const produtoController = {
       next(erro);
     }
   },
+
+  // Faltava por completo: service e model já tinham ativar(), mas não
+  // existia handler pra expor isso na API.
+  ativar: async (req, res, next) => {
+    try {
+      await produtoService.ativar(req.params.id);
+      res.json({ sucesso: true, mensagem: "Produto ativado com sucesso" });
+    } catch (erro) {
+      next(erro);
+    }
+  },
 };
 
 module.exports = produtoController;

@@ -13,18 +13,29 @@ const parseId = (id) => {
   return parsed;
 };
 
+// Faltava em criar() e atualizar(): ativo era Number(body.ativo) sem
+// validar o resultado, então qualquer valor (2, "abc" -> NaN, -1) ia
+// direto pro banco.
+const parseAtivo = (valor) => {
+  const numero = Number(valor);
+  if (![0, 1].includes(numero)) {
+    throw new AppError('Campo "ativo" precisa ser 0 ou 1', 400);
+  }
+  return numero;
+};
+
 const validarCamposObrigatorios = (dados) => {
   const faltando = CAMPOS_OBRIGATORIOS_CRIACAO.filter(
     (campo) =>
       dados[campo] === undefined ||
       dados[campo] === null ||
-      dados[campo] === ""
+      dados[campo] === "",
   );
 
   if (faltando.length > 0) {
     throw new AppError(
       `Campos obrigatórios ausentes: ${faltando.join(", ")}`,
-      400
+      400,
     );
   }
 };
@@ -33,7 +44,9 @@ const extrairCamposAtualizaveis = (body) => {
   return CAMPOS_ATUALIZAVEIS.reduce((acc, campo) => {
     if (body[campo] !== undefined && body[campo] !== "") {
       acc[campo] =
-        campo === "ativo" ? Number(body[campo]) : String(body[campo]).trim();
+        campo === "ativo"
+          ? parseAtivo(body[campo])
+          : String(body[campo]).trim();
     }
     return acc;
   }, {});
@@ -58,7 +71,7 @@ const clienteService = {
 
     const dados = {
       nome_cliente: String(body.nome_cliente).trim(),
-      ativo: body.ativo !== undefined ? Number(body.ativo) : 1,
+      ativo: body.ativo !== undefined ? parseAtivo(body.ativo) : 1,
     };
 
     return await Cliente.create(dados);

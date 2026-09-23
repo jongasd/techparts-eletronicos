@@ -27,5 +27,10 @@ router.put(
   autorizar("produtos", "excluir"),
   produtoController.desativar,
 );
+router.put(
+  "/:id/ativar",
+  autorizar("produtos", "editar"),
+  produtoController.ativar,
+);
 
 module.exports = router;
