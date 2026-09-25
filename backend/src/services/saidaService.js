@@ -19,6 +19,22 @@ const parseId = (id) => {
   return parsed;
 };
 
+const parseNumero = (campo, valor) => {
+  const numero = Number(valor);
+  if (Number.isNaN(numero) || !Number.isFinite(numero)) {
+    throw new AppError(`Campo "${campo}" precisa ser um número válido`, 400);
+  }
+  return numero;
+};
+
+const parseData = (campo, valor) => {
+  const data = new Date(valor);
+  if (Number.isNaN(data.getTime())) {
+    throw new AppError(`Campo "${campo}" precisa ser uma data válida`, 400);
+  }
+  return String(valor);
+};
+
 const validarCamposObrigatorios = (dados) => {
   const faltando = CAMPOS_OBRIGATORIOS_CRIACAO.filter(
     (campo) =>
@@ -69,15 +85,19 @@ const saidaService = {
 
   criar: async (body) => {
     validarCamposObrigatorios(body);
+    parseData("data_saida", body.data_saida);
     validarItens(body.itens);
+
+    const idCliente = parseNumero("id_cliente", body.id_cliente);
+    const idFuncionario = parseNumero("id_funcionario", body.id_funcionario);
 
     const conn = await pool.getConnection();
     try {
       await conn.beginTransaction();
 
       const dadosSaida = {
-        id_cliente: Number(body.id_cliente),
-        id_funcionario: Number(body.id_funcionario),
+        id_cliente: idCliente,
+        id_funcionario: idFuncionario,
         data_saida: String(body.data_saida),
         observacao: body.observacao ? String(body.observacao).trim() : null,
       };
@@ -156,35 +176,45 @@ const saidaService = {
       throw new AppError("Saída não encontrada", 404);
     }
 
-    const dadosAtualizados = {};
-    if (body.id_cliente !== undefined)
-      dadosAtualizados.id_cliente = Number(body.id_cliente);
-    if (body.id_funcionario !== undefined)
-      dadosAtualizados.id_funcionario = Number(body.id_funcionario);
-    if (body.data_saida !== undefined)
-      dadosAtualizados.data_saida = String(body.data_saida);
-    if (body.observacao !== undefined)
-      dadosAtualizados.observacao = body.observacao
-        ? String(body.observacao).trim()
-        : null;
-
-    if (Object.keys(dadosAtualizados).length === 0 && !body.itens) {
-      throw new AppError("Nenhum campo válido informado para atualização", 400);
-    }
-
-    if (Object.keys(dadosAtualizados).length > 0) {
-      await Saida.update(idValido, dadosAtualizados);
-    }
-
+    // Checa itens ANTES de tocar em qualquer campo: se itens vier no body,
+    // a atualização inteira é rejeitada (501) sem gravar nada. Do jeito
+    // antigo, dava pra gravar id_cliente/id_funcionario/data_saida e só
+    // depois lançar o erro de itens — resposta de erro com efeito colateral.
     if (body.itens) {
       throw new AppError(
         "Atualização de itens de saída está desabilitada: reversão de estoque e lote ainda não implementada",
         501,
       );
     }
+
+    const dadosAtualizados = {};
+    if (body.id_cliente !== undefined) {
+      dadosAtualizados.id_cliente = parseNumero("id_cliente", body.id_cliente);
+    }
+    if (body.id_funcionario !== undefined) {
+      dadosAtualizados.id_funcionario = parseNumero(
+        "id_funcionario",
+        body.id_funcionario,
+      );
+    }
+    if (body.data_saida !== undefined) {
+      dadosAtualizados.data_saida = parseData("data_saida", body.data_saida);
+    }
+    if (body.observacao !== undefined) {
+      dadosAtualizados.observacao = body.observacao
+        ? String(body.observacao).trim()
+        : null;
+    }
+
+    if (Object.keys(dadosAtualizados).length === 0) {
+      throw new AppError("Nenhum campo válido informado para atualização", 400);
+    }
+
+    await Saida.update(idValido, dadosAtualizados);
   },
 
-  excluir: async () => {
+  excluir: async (id) => {
+    parseId(id);
     throw new AppError(
       "Exclusão de saída está desabilitada: reversão de estoque e lote ainda não implementada",
       501,
