@@ -14,6 +14,22 @@ const parseId = (id) => {
   return parsed;
 };
 
+const parseNumero = (campo, valor) => {
+  const numero = Number(valor);
+  if (Number.isNaN(numero) || !Number.isFinite(numero)) {
+    throw new AppError(`Campo "${campo}" precisa ser um número válido`, 400);
+  }
+  return numero;
+};
+
+const parseData = (campo, valor) => {
+  const data = new Date(valor);
+  if (Number.isNaN(data.getTime())) {
+    throw new AppError(`Campo "${campo}" precisa ser uma data válida`, 400);
+  }
+  return String(valor);
+};
+
 const validarCamposObrigatorios = (dados) => {
   const faltando = CAMPOS_OBRIGATORIOS_CRIACAO.filter(
     (campo) =>
@@ -37,7 +53,12 @@ const validarItens = (itens) => {
     );
   }
   itens.forEach((item, index) => {
-    if (!item.id_produto || !item.quantidade || !item.valor_unitario) {
+    const valorAusente =
+      item.valor_unitario === undefined ||
+      item.valor_unitario === null ||
+      item.valor_unitario === "";
+
+    if (!item.id_produto || !item.quantidade || valorAusente) {
       throw new AppError(
         `Item na posição ${index + 1} está incompleto. Campos obrigatórios: id_produto, quantidade, valor_unitario`,
         400,
@@ -83,6 +104,7 @@ const entradaService = {
 
   criar: async (body) => {
     validarCamposObrigatorios(body);
+    parseData("data_entrada", body.data_entrada);
     validarItens(body.itens);
 
     const conn = await pool.getConnection();
@@ -90,7 +112,7 @@ const entradaService = {
       await conn.beginTransaction();
 
       const dadosEntrada = {
-        id_funcionario: Number(body.id_funcionario),
+        id_funcionario: parseNumero("id_funcionario", body.id_funcionario),
         data_entrada: String(body.data_entrada),
         observacao: body.observacao ? String(body.observacao).trim() : null,
       };
@@ -106,8 +128,6 @@ const entradaService = {
           throw new AppError(`Produto ${idProduto} não encontrado`, 404);
         }
 
-        // ⚠️ depende de Entrada.createItem retornar o insertId (result.insertId).
-        // Se o model atual não fizer isso, ajuste-o antes de usar o lote em produção.
         const idItemEntrada = await Entrada.createItem(
           {
             id_entrada: novoId,
@@ -139,30 +159,11 @@ const entradaService = {
     }
   },
 
-  // atualizar/excluir: NÃO tocam em quantidade_estoque nem em lotes hoje. Ver ressalva na resposta.
   atualizar: async (id, body) => {
     const idValido = parseId(id);
     const entrada = await Entrada.findById(idValido);
     if (!entrada) {
       throw new AppError("Entrada não encontrada", 404);
-    }
-
-    const dadosAtualizados = {};
-    if (body.id_funcionario !== undefined)
-      dadosAtualizados.id_funcionario = Number(body.id_funcionario);
-    if (body.data_entrada !== undefined)
-      dadosAtualizados.data_entrada = String(body.data_entrada);
-    if (body.observacao !== undefined)
-      dadosAtualizados.observacao = body.observacao
-        ? String(body.observacao).trim()
-        : null;
-
-    if (Object.keys(dadosAtualizados).length === 0 && !body.itens) {
-      throw new AppError("Nenhum campo válido informado para atualização", 400);
-    }
-
-    if (Object.keys(dadosAtualizados).length > 0) {
-      await Entrada.update(idValido, dadosAtualizados);
     }
 
     if (body.itens) {
@@ -171,9 +172,35 @@ const entradaService = {
         501,
       );
     }
+
+    const dadosAtualizados = {};
+    if (body.id_funcionario !== undefined) {
+      dadosAtualizados.id_funcionario = parseNumero(
+        "id_funcionario",
+        body.id_funcionario,
+      );
+    }
+    if (body.data_entrada !== undefined) {
+      dadosAtualizados.data_entrada = parseData(
+        "data_entrada",
+        body.data_entrada,
+      );
+    }
+    if (body.observacao !== undefined) {
+      dadosAtualizados.observacao = body.observacao
+        ? String(body.observacao).trim()
+        : null;
+    }
+
+    if (Object.keys(dadosAtualizados).length === 0) {
+      throw new AppError("Nenhum campo válido informado para atualização", 400);
+    }
+
+    await Entrada.update(idValido, dadosAtualizados);
   },
 
   excluir: async (id) => {
+    parseId(id);
     throw new AppError(
       "Exclusão de entrada está desabilitada: reversão de estoque e lote ainda não implementada",
       501,

@@ -146,7 +146,6 @@ describe("produtoService", () => {
       await expect(
         produtoService.atualizar("1", { ativo: 0, campo_invalido: "x" }),
       ).rejects.toMatchObject({ statusCode: 400 });
-      // "ativo" não é atualizável por esta rota — some do payload.
       expect(Produto.update).not.toHaveBeenCalled();
     });
 

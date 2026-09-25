@@ -13,6 +13,14 @@ const parseId = (id) => {
   return parsed;
 };
 
+const parseAtivo = (valor) => {
+  const numero = Number(valor);
+  if (![0, 1].includes(numero)) {
+    throw new AppError('Campo "ativo" precisa ser 0 ou 1', 400);
+  }
+  return numero;
+};
+
 const validarCamposObrigatorios = (dados) => {
   const faltando = CAMPOS_OBRIGATORIOS_CRIACAO.filter(
     (campo) =>
@@ -33,7 +41,9 @@ const extrairCamposAtualizaveis = (body) => {
   return CAMPOS_ATUALIZAVEIS.reduce((acc, campo) => {
     if (body[campo] !== undefined && body[campo] !== "") {
       acc[campo] =
-        campo === "ativo" ? Number(body[campo]) : String(body[campo]).trim();
+        campo === "ativo"
+          ? parseAtivo(body[campo])
+          : String(body[campo]).trim();
     }
     return acc;
   }, {});
@@ -58,7 +68,7 @@ const funcionarioService = {
 
     const dados = {
       nome_funcionario: String(body.nome_funcionario).trim(),
-      ativo: body.ativo !== undefined ? Number(body.ativo) : 1,
+      ativo: body.ativo !== undefined ? parseAtivo(body.ativo) : 1,
     };
 
     return await Funcionario.create(dados);
