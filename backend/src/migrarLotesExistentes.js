@@ -1,4 +1,4 @@
-const pool = require("../src/config/database");
+const pool = require("./config/database");
 
 async function main() {
   const conn = await pool.getConnection();
