@@ -21,6 +21,22 @@ const parseId = (id) => {
   return parsed;
 };
 
+const parseNumero = (campo, valor) => {
+  const numero = Number(valor);
+  if (Number.isNaN(numero) || !Number.isFinite(numero)) {
+    throw new AppError(`Campo "${campo}" precisa ser um número válido`, 400);
+  }
+  return numero;
+};
+
+const parseData = (campo, valor) => {
+  const data = new Date(valor);
+  if (Number.isNaN(data.getTime())) {
+    throw new AppError(`Campo "${campo}" precisa ser uma data válida`, 400);
+  }
+  return String(valor);
+};
+
 const validarCamposObrigatorios = (dados) => {
   const faltando = CAMPOS_OBRIGATORIOS_CRIACAO.filter(
     (campo) =>
@@ -45,11 +61,6 @@ const validarTipoAjuste = (tipo) => {
   }
 };
 
-// O sinal de quantidade_ajustada é a fonte da verdade do delta de estoque.
-// tipo_ajuste só precisa ser coerente com esse sinal — evita o caso
-// tipo_ajuste="saida" + quantidade_ajustada positivo, que seria ambíguo.
-// "correcao" aceita qualquer sinal (exceto zero) porque cobre tanto
-// correção pra cima quanto pra baixo.
 const validarCoerenciaTipoQuantidade = (tipo, quantidadeAjustada) => {
   if (quantidadeAjustada === 0) {
     throw new AppError("quantidade_ajustada não pode ser zero", 400);
@@ -83,9 +94,14 @@ const ajusteService = {
   criar: async (body) => {
     validarCamposObrigatorios(body);
     validarTipoAjuste(body.tipo_ajuste);
+    parseData("data_ajuste", body.data_ajuste);
 
-    const idProduto = Number(body.id_produto);
-    const quantidadeAjustada = Number(body.quantidade_ajustada);
+    const idFuncionario = parseNumero("id_funcionario", body.id_funcionario);
+    const idProduto = parseNumero("id_produto", body.id_produto);
+    const quantidadeAjustada = parseNumero(
+      "quantidade_ajustada",
+      body.quantidade_ajustada,
+    );
 
     validarCoerenciaTipoQuantidade(body.tipo_ajuste, quantidadeAjustada);
 
@@ -118,7 +134,7 @@ const ajusteService = {
       }
 
       const dados = {
-        id_funcionario: Number(body.id_funcionario),
+        id_funcionario: idFuncionario,
         id_produto: idProduto,
         quantidade_ajustada: quantidadeAjustada,
         tipo_ajuste: String(body.tipo_ajuste),
@@ -138,10 +154,6 @@ const ajusteService = {
     }
   },
 
-  // Bloqueado de propósito: editar/excluir um ajuste já aplicado deixaria
-  // o histórico de auditoria de estoque divergente do saldo real em
-  // tbl_produtos, sem trilha de reversão. Um ajuste errado se corrige
-  // com outro ajuste (lançamento novo), não editando o antigo.
   atualizar: async () => {
     throw new AppError(
       "Ajuste não pode ser editado após criado: lance um novo ajuste para corrigir",
