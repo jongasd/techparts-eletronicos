@@ -9,8 +9,6 @@ const Lote = require("../../src/models/lote");
 const pool = require("../../src/config/database");
 const entradaService = require("../../src/services/entradaService");
 
-// Ajuste os paths dos require acima (models/config) pra bater com a
-// estrutura real do projeto se for diferente.
 
 const criarConnMock = () => ({
   beginTransaction: jest.fn().mockResolvedValue(undefined),

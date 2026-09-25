@@ -98,34 +98,85 @@ describe("funcionarioService", () => {
     });
 
     test("converte tipos e faz trim no texto antes de gravar", async () => {
-        Funcionario.create.mockResolvedValue(44)
-        await funcionarioService.criar(bodyValido())
+      Funcionario.create.mockResolvedValue(44);
+      await funcionarioService.criar(bodyValido());
 
-        expect(Funcionario.create).toHaveBeenCalledWith({
-            nome_funcionario: "Jesus Ezequiel Marcolongo dos Santos Lopes",
-            ativo: 1
-        })
-    })
+      expect(Funcionario.create).toHaveBeenCalledWith({
+        nome_funcionario: "Jesus Ezequiel Marcolongo dos Santos Lopes",
+        ativo: 1,
+      });
+    });
   });
 
-  describe("atualizar", ()=>{
+  describe("atualizar", () => {
     test("404 quando o funcionario não existe", async () => {
-        Funcionario.findById.mockResolvedValue(null)
-        await expect(
-            funcionarioService.atualizar("1", {nome_funcionario: "Jonas"})
-        ).rejects.toMatchObject({statusCode: 404})
-        expect(Funcionario.update).not.toHaveBeenCalled()
-    })
+      Funcionario.findById.mockResolvedValue(null);
+      await expect(
+        funcionarioService.atualizar("1", { nome_funcionario: "Jonas" }),
+      ).rejects.toMatchObject({ statusCode: 404 });
+      expect(Funcionario.update).not.toHaveBeenCalled();
+    });
 
     test("rejeita quando nenhum campo válido é enviado", async () => {
-        Funcionario.findById.mockResolvedValue({ id_funcionario: 1, ativo:1})
-    
-        await expect(
-            funcionarioService.atualizar("1", {campo_invalido: "x"}),
-        ).rejects.toMatchObject({statusCode: 400})
+      Funcionario.findById.mockResolvedValue({ id_funcionario: 1, ativo: 1 });
 
-        expect(Funcionario.update).not.toHaveBeenCalled()
+      await expect(
+        funcionarioService.atualizar("1", { campo_invalido: "x" }),
+      ).rejects.toMatchObject({ statusCode: 400 });
+
+      expect(Funcionario.update).not.toHaveBeenCalled();
+    });
+
+    test("rejeita ativo fora de 0/1", async () => {
+      Funcionario.findById.mockResolvedValue({ id_funcionario: 1, ativo: 1 });
+
+      await expect(
+        funcionarioService.atualizar("1", { ativo: 5 }),
+      ).rejects.toMatchObject({ statusCode: 400 });
+    });
+    test("rejeita ativo não numérico", async () => {
+      Funcionario.findById.mockResolvedValue({ id_funcionario: 1, ativo: 1 });
+      await expect(
+        funcionarioService.atualizar("1", { ativo: "abc" }),
+      ).rejects.toMatchObject({ statusCode: 400 });
+      expect(Funcionario.update).toHaveBeenCalled();
+    });
+
+    test("atualiza só os campos válidos, convertendo tipos", async () => {
+      Funcionario.findById.mockResolvedValue({ id_funcionario: 1, ativo: 1 });
+      Funcionario.update.mockResolvedValue({ affectedRows: 1 });
+
+      await expect(
+        funcionarioService.atualizar("1", { ativo: "abc" }),
+      ).rejects.toMatchObject({ statusCode: 400 });
+      expect(Funcionario.update).not.toHaveBeenCalled();
+    });
+    test("atualiza só os campos válidos, convertendo tipos", async () => {
+      Funcionario.findById.mockResolvedValue({ id_funcionario: 1, ativo: 1 });
+      Funcionario.update.mockResolvedValue({ affectedRows: 1 });
+      await funcionarioService.atualizar("1", {
+        nome_funcionario: "Marcos",
+        ativo: "0",
+        campo_invalido: "ignorado",
+      });
+      expect(Funcionario.update).toHaveBeenCalledWith(1, {
+        nome_funcionario: "marcos",
+        ativo: 0,
+      });
+      expect(Funcionario.update).toHaveBeenCalledWith(1, {
+        nome_funcionario: "Marcos",
+        ativo: 0,
+      })
+    });
+    test("ignora campo vazio ('') sem quebrar", async () => {
+        Funcionario.findById.mockResolvedValue({id_funcionario: 1, ativo: 1})
+        Funcionario.update.mockResolvedValue({ affectedRows: 1})
+
+        await funcionarioService.atualizar("1", {
+            nome_cliente: "",
+            ativo: "1",
+        })
+        expect(Funcionario.update).toHaveBeenCalledWith(1, {ativo: 1})
     })
-
-  })
+  });
 });
