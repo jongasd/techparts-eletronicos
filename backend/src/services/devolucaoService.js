@@ -1,6 +1,6 @@
-const pool = require("../config/db"); // mesmo import usado em saidaService
+const pool = require("../config/database"); // mesmo import usado em saidaService
 const Devolucao = require("../models/devolucao");
-const Produto = require("../models/produto");
+const Produto = require("../models/produtos");
 const Saida = require("../models/saida");
 const Lote = require("../models/lote");
 const AppError = require("../utils/appError");

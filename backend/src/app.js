@@ -18,10 +18,10 @@ const limitadorLogin = rateLimit({
         "Muitas tentativas de login. Tente novamente em alguns minutos.",
     }),
 });
-
-app.use("/auth/login", limitadorLogin);
 const cors = require("cors");
 const app = express();
+
+app.use("/auth/login", limitadorLogin);
 
 const swaggerUi = require("swagger-ui-express");
 const swaggerFile = require("./swagger_output.json");

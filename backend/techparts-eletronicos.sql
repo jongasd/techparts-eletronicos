@@ -418,32 +418,6 @@ WHERE
         AND acao = 'visualizar'
     );
 
--- Rodar uma vez, manualmente, após criar as roles.
--- Troque a senha antes de rodar — gere o hash com:
--- node -e "require('bcrypt').hash('SUASENHA', 10).then(console.log)"
-INSERT INTO
-    tbl_funcionario (
-        nome_funcionario,
-        login,
-        senha_hash,
-        id_role,
-        ativo
-    )
-VALUES
-    (
-        'Administrador Inicial',
-        'admin',
-        '$2b$10$N.9VpRKHQ8QaUQjTcp8ROuWGEM1n.XMfYSsQMfg5aHuDQCDb.HX9C',
-        (
-            SELECT
-                id_role
-            FROM
-                tbl_roles
-            WHERE
-                nome_role = 'admin'
-        ),
-        1
-    );
 
 CREATE TABLE
     tbl_lote (
