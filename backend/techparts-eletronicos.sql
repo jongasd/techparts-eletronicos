@@ -169,11 +169,6 @@ CREATE INDEX idx_ajuste_produto_data ON tbl_ajuste (id_produto, data_ajuste);
 
 CREATE INDEX idx_devolucao_saida ON tbl_devolucao (id_saida);
 
-ALTER TABLE tbl_funcionario
-ADD COLUMN login VARCHAR(60) NOT NULL AFTER nome_funcionario,
-ADD COLUMN senha_hash VARCHAR(255) NOT NULL AFTER login,
-ADD UNIQUE KEY uq_funcionario_login (login);
-
 CREATE TABLE
     tbl_roles (
         id_role INT NOT NULL AUTO_INCREMENT,
