@@ -23,6 +23,10 @@ app.use("/auth/login", limitadorLogin);
 const cors = require("cors");
 const app = express();
 
+const swaggerUi = require('swagger-ui-express');
+const swaggerFile = require('./swagger_output.json');
+
+
 app.use(
   cors({
     origin: "*",
@@ -48,5 +52,7 @@ app.use("/dashboard", require("./routes/dashboardRoute"));
 app.use("/pdv", require("./routes/pdvRoute"));
 app.use("/lotes", require("./routes/lotes"));
 app.use(require("./middlewares/errorHandle"));
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerFile));
 
 module.exports = app;
