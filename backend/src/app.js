@@ -1,4 +1,25 @@
 const express = require("express");
+const rateLimit = require("express-rate-limit");
+
+if (process.env.TRUST_PROXY) {
+  app.set("trust proxy", Number(process.env.TRUST_PROXY));
+}
+
+const limitadorLogin = rateLimit({
+  windowMs: 15 * 60 * 1000, 
+  limit: 10,
+  skipSuccessfulRequests: true,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (req, res) =>
+    res.status(429).json({
+      sucesso: false,
+      mensagem:
+        "Muitas tentativas de login. Tente novamente em alguns minutos.",
+    }),
+});
+
+app.use("/auth/login", limitadorLogin);
 const cors = require("cors");
 const app = express();
 
