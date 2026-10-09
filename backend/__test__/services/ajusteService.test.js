@@ -170,6 +170,7 @@ describe("ajusteService", () => {
         quantidade_estoque: 100,
       });
       Ajuste.create.mockResolvedValue(1);
+      Produto.decrementarEstoque.mockResolvedValue(true);
 
       await expect(
         ajusteService.criar(

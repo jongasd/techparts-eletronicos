@@ -1,9 +1,9 @@
-jest.mock("../models/devolucao");
-jest.mock("../utils/appError");
+jest.mock("../../src/models/devolucao");
+jest.mock("../../src/utils/appError");
 
-const Devolucao = require("../models/devolucao");
-const AppError = require("../utils/appError");
-const devolucaoService = require("../services/devolucaoService"); // ajuste o caminho se necessário
+const Devolucao = require("../../src/models/devolucao");
+const AppError = require("../../src/utils/appError");
+const devolucaoService = require("../../src/services/devolucaoService"); // ajuste o caminho se necessário
 
 const mockAppError = () => {
   AppError.mockImplementation((message, statusCode) => {
@@ -194,20 +194,17 @@ describe("devolucaoService", () => {
       });
     });
 
-
-    it("[BUG] aceita quantidade_devolvida não numérica e grava NaN", async () => {
-      Devolucao.create.mockResolvedValue(1);
-      Devolucao.createItem.mockResolvedValue(undefined);
+    it("rejeita quantidade_devolvida não numérica com 400, sem gravar nada", async () => {
       const body = {
         ...bodyValido(),
         itens: [{ id_produto: 1, quantidade_devolvida: "abc" }],
       };
 
-      await devolucaoService.criar(body);
-
-      expect(Devolucao.createItem).toHaveBeenCalledWith(
-        expect.objectContaining({ quantidade_devolvida: NaN }),
-      );
+      await expect(devolucaoService.criar(body)).rejects.toMatchObject({
+        statusCode: 400,
+      });
+      expect(Devolucao.create).not.toHaveBeenCalled();
+      expect(Devolucao.createItem).not.toHaveBeenCalled();
     });
 
     it("[BUG] aceita id_saida não numérico e grava NaN sem erro", async () => {
@@ -357,7 +354,6 @@ describe("devolucaoService", () => {
     });
   });
 
- 
   describe("excluir", () => {
     it("lança AppError 400 para id inválido", async () => {
       await expect(devolucaoService.excluir("0")).rejects.toMatchObject({

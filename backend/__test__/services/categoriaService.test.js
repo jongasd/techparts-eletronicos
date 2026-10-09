@@ -1,9 +1,9 @@
-jest.mock("../models/categoria");
-jest.mock("../utils/appError");
+jest.mock("../../src/models/categoria");
+jest.mock("../../src/utils/appError");
 
-const Categoria = require("../models/categoria");
-const AppError = require("../utils/appError");
-const categoriaService = require("../services/categoriaService");
+const Categoria = require("../../src/models/categoria");
+const AppError = require("../../src/utils/appError");
+const categoriaService = require("../../src/services/categoriaService");
 
 AppError.mockImplementation((message, statusCode) => {
   const err = new Error(message);

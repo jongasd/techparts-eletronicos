@@ -1,5 +1,6 @@
-  const app = require("./app"); // Importa as configurações do app.js
-require("dotenv").config()
+require("./config/env"); // primeiro: carrega o .env e aborta se a configuração for inválida
+
+const app = require("./app");
 
 const PORT = process.env.PORT || 3000;
 

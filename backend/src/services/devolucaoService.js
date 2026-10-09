@@ -41,13 +41,18 @@ const validarItens = (itens) => {
   }
 
   itens.forEach((item, index) => {
-    if (!item.id_produto || !item.quantidade_devolvida) {
+    const qtdAusente =
+      item.quantidade_devolvida === undefined ||
+      item.quantidade_devolvida === null ||
+      item.quantidade_devolvida === "";
+    if (!item.id_produto || qtdAusente) {
       throw new AppError(
         `Item na posição ${index + 1} está incompleto. Campos obrigatórios: id_produto, quantidade_devolvida`,
         400,
       );
     }
-    if (Number(item.quantidade_devolvida) <= 0) {
+    const qtd = Number(item.quantidade_devolvida);
+    if (!Number.isInteger(qtd) || qtd <= 0) {
       throw new AppError(
         `Item na posição ${index + 1} possui quantidade devolvida inválida`,
         400,

@@ -44,3 +44,9 @@ if (!Number.isInteger(Number(process.env.DB_PORT))) {
   console.error("[Config] DB_PORT precisa ser um número inteiro.");
   process.exit(1);
 }
+if (process.env.NODE_ENV === "production" && !process.env.CORS_ORIGIN) {
+  console.error(
+    "[Config] Defina CORS_ORIGIN com a origem do frontend em produção.",
+  );
+  process.exit(1);
+}

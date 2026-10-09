@@ -4,12 +4,12 @@ jest.mock("../../src/models/produtos");
 jest.mock("../../src/models/lote");
 jest.mock("../../src/config/database");
 
-const Saida = require("../../pdv-techparts/src/models/saida");
+const Saida = require("../../src/models/saida");
 const PDV = require("../../src/models/pdv");
 const Produto = require("../../src/models/produtos");
 const Lote = require("../../src/models/lote");
 const pool = require("../../src/config/database");
-const pdvService = require("../../pdv-techparts/src/services/pdvService");
+const pdvService = require("../../src/services/pdvService");
 
 const criarConnMock = () => ({
   beginTransaction: jest.fn().mockResolvedValue(undefined),
@@ -19,7 +19,10 @@ const criarConnMock = () => ({
 });
 
 const vendedor = { id_funcionario: 7, permissoes: ["pdv:vender"] };
-const gerente = { id_funcionario: 2, permissoes: ["pdv:vender", "pdv:desconto"] };
+const gerente = {
+  id_funcionario: 2,
+  permissoes: ["pdv:vender", "pdv:desconto"],
+};
 
 const produto = (over = {}) => ({
   id_produto: 10,
@@ -67,7 +70,12 @@ describe("pdvService.criarVenda", () => {
       troco: "19.70",
     });
     expect(Saida.create).toHaveBeenCalledWith(
-      expect.objectContaining({ id_funcionario: 7, origem: "pdv", total: "30.30", troco: "19.70" }),
+      expect.objectContaining({
+        id_funcionario: 7,
+        origem: "pdv",
+        total: "30.30",
+        troco: "19.70",
+      }),
       conn,
     );
     expect(Saida.createItem).toHaveBeenCalledWith(
@@ -85,7 +93,10 @@ describe("pdvService.criarVenda", () => {
 
   test("consome lotes em ordem e registra o consumo (3 un: 2 do lote 1 + 1 do lote 2)", async () => {
     await pdvService.criarVenda(
-      { itens: [{ id_produto: 10, quantidade: 3 }], pagamentos: [{ forma: "pix", valor: 30.3 }] },
+      {
+        itens: [{ id_produto: 10, quantidade: 3 }],
+        pagamentos: [{ forma: "pix", valor: 30.3 }],
+      },
       vendedor,
     );
     expect(Lote.abaterQuantidade).toHaveBeenNthCalledWith(1, conn, 1, 2);
@@ -96,7 +107,10 @@ describe("pdvService.criarVenda", () => {
   test("junta linhas repetidas do mesmo produto", async () => {
     await pdvService.criarVenda(
       {
-        itens: [{ id_produto: 10, quantidade: 1 }, { id_produto: 10, quantidade: 2 }],
+        itens: [
+          { id_produto: 10, quantidade: 1 },
+          { id_produto: 10, quantidade: 2 },
+        ],
         pagamentos: [{ forma: "pix", valor: 30.3 }],
       },
       vendedor,
@@ -109,18 +123,30 @@ describe("pdvService.criarVenda", () => {
     await pdvService.criarVenda(
       {
         itens: [{ id_produto: 10, quantidade: 1 }],
-        pagamentos: [{ forma: "dinheiro", valor: 5.1 }, { forma: "pix", valor: 5 }],
+        pagamentos: [
+          { forma: "dinheiro", valor: 5.1 },
+          { forma: "pix", valor: 5 },
+        ],
       },
       vendedor,
     );
-    expect(PDV.criarPagamento).toHaveBeenCalledWith({ id_saida: 55, forma: "dinheiro", valor: "5.10" }, conn);
-    expect(PDV.criarPagamento).toHaveBeenCalledWith({ id_saida: 55, forma: "pix", valor: "5.00" }, conn);
+    expect(PDV.criarPagamento).toHaveBeenCalledWith(
+      { id_saida: 55, forma: "dinheiro", valor: "5.10" },
+      conn,
+    );
+    expect(PDV.criarPagamento).toHaveBeenCalledWith(
+      { id_saida: 55, forma: "pix", valor: "5.00" },
+      conn,
+    );
   });
 
   test("rejeita pagamento insuficiente e faz rollback", async () => {
     await expect(
       pdvService.criarVenda(
-        { itens: [{ id_produto: 10, quantidade: 1 }], pagamentos: [{ forma: "dinheiro", valor: 10 }] },
+        {
+          itens: [{ id_produto: 10, quantidade: 1 }],
+          pagamentos: [{ forma: "dinheiro", valor: 10 }],
+        },
         vendedor,
       ),
     ).rejects.toMatchObject({ statusCode: 400 });
@@ -131,7 +157,10 @@ describe("pdvService.criarVenda", () => {
   test("pix/cartão acima do total não vira troco", async () => {
     await expect(
       pdvService.criarVenda(
-        { itens: [{ id_produto: 10, quantidade: 1 }], pagamentos: [{ forma: "pix", valor: 20 }] },
+        {
+          itens: [{ id_produto: 10, quantidade: 1 }],
+          pagamentos: [{ forma: "pix", valor: 20 }],
+        },
         vendedor,
       ),
     ).rejects.toMatchObject({ statusCode: 400 });
@@ -143,7 +172,9 @@ describe("pdvService.criarVenda", () => {
       desconto: 1,
       pagamentos: [{ forma: "dinheiro", valor: 10 }],
     };
-    await expect(pdvService.criarVenda(body, vendedor)).rejects.toMatchObject({ statusCode: 403 });
+    await expect(pdvService.criarVenda(body, vendedor)).rejects.toMatchObject({
+      statusCode: 403,
+    });
     expect(pool.getConnection).not.toHaveBeenCalled();
 
     const r = await pdvService.criarVenda(body, gerente);
@@ -167,7 +198,10 @@ describe("pdvService.criarVenda", () => {
     Produto.findById.mockResolvedValue(produto({ ativo: 0 }));
     await expect(
       pdvService.criarVenda(
-        { itens: [{ id_produto: 10, quantidade: 1 }], pagamentos: [{ forma: "pix", valor: 10.1 }] },
+        {
+          itens: [{ id_produto: 10, quantidade: 1 }],
+          pagamentos: [{ forma: "pix", valor: 10.1 }],
+        },
         vendedor,
       ),
     ).rejects.toMatchObject({ statusCode: 400 });
@@ -176,7 +210,10 @@ describe("pdvService.criarVenda", () => {
     Produto.decrementarEstoque.mockResolvedValue(false);
     await expect(
       pdvService.criarVenda(
-        { itens: [{ id_produto: 10, quantidade: 1 }], pagamentos: [{ forma: "pix", valor: 10.1 }] },
+        {
+          itens: [{ id_produto: 10, quantidade: 1 }],
+          pagamentos: [{ forma: "pix", valor: 10.1 }],
+        },
         vendedor,
       ),
     ).rejects.toMatchObject({ statusCode: 400 });
@@ -185,7 +222,10 @@ describe("pdvService.criarVenda", () => {
     Lote.buscarLotesDisponiveisParaAtualizacao.mockResolvedValue([]);
     await expect(
       pdvService.criarVenda(
-        { itens: [{ id_produto: 10, quantidade: 1 }], pagamentos: [{ forma: "pix", valor: 10.1 }] },
+        {
+          itens: [{ id_produto: 10, quantidade: 1 }],
+          pagamentos: [{ forma: "pix", valor: 10.1 }],
+        },
         vendedor,
       ),
     ).rejects.toMatchObject({ statusCode: 500 });
@@ -196,13 +236,24 @@ describe("pdvService.criarVenda", () => {
   test("validações de entrada não abrem conexão", async () => {
     const casos = [
       { itens: [], pagamentos: [{ forma: "pix", valor: 1 }] },
-      { itens: [{ id_produto: 10, quantidade: 1.5 }], pagamentos: [{ forma: "pix", valor: 1 }] },
+      {
+        itens: [{ id_produto: 10, quantidade: 1.5 }],
+        pagamentos: [{ forma: "pix", valor: 1 }],
+      },
       { itens: [{ id_produto: 10, quantidade: 1 }], pagamentos: [] },
-      { itens: [{ id_produto: 10, quantidade: 1 }], pagamentos: [{ forma: "cheque", valor: 1 }] },
-      { itens: [{ id_produto: 10, quantidade: 1 }], pagamentos: [{ forma: "pix", valor: 1.005 }] },
+      {
+        itens: [{ id_produto: 10, quantidade: 1 }],
+        pagamentos: [{ forma: "cheque", valor: 1 }],
+      },
+      {
+        itens: [{ id_produto: 10, quantidade: 1 }],
+        pagamentos: [{ forma: "pix", valor: 1.005 }],
+      },
     ];
     for (const c of casos) {
-      await expect(pdvService.criarVenda(c, vendedor)).rejects.toMatchObject({ statusCode: 400 });
+      await expect(pdvService.criarVenda(c, vendedor)).rejects.toMatchObject({
+        statusCode: 400,
+      });
     }
     expect(pool.getConnection).not.toHaveBeenCalled();
   });
@@ -211,6 +262,8 @@ describe("pdvService.criarVenda", () => {
 describe("pdvService.buscarVenda", () => {
   test("não expõe saída manual como venda do PDV", async () => {
     Saida.findById.mockResolvedValue({ id_saida: 3, origem: "manual" });
-    await expect(pdvService.buscarVenda("3")).rejects.toMatchObject({ statusCode: 404 });
+    await expect(pdvService.buscarVenda("3")).rejects.toMatchObject({
+      statusCode: 404,
+    });
   });
 });

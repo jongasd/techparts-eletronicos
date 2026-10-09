@@ -1,11 +1,11 @@
-jest.mock("../models/lote");
-jest.mock("../models/produtos");
-jest.mock("../utils/appError");
+jest.mock("../../src/models/lote");
+jest.mock("../../src/models/produtos");
+jest.mock("../../src/utils/appError");
 
-const Lote = require("../models/lote");
-const Produto = require("../models/produtos");
-const AppError = require("../utils/appError");
-const loteService = require("../services/loteService"); // ajuste o caminho se necessário
+const Lote = require("../../src/models/lote");
+const Produto = require("../../src/models/produtos");
+const AppError = require("../../src/utils/appError");
+const loteService = require("../../src/services/loteService"); // ajuste o caminho se necessário
 
 const mockAppError = () => {
   AppError.mockImplementation((message, statusCode) => {

@@ -1,7 +1,7 @@
 jest.mock("../../src/models/funcionario.js");
 
 const Funcionario = require("../../src/models/funcionario");
-const funcionarioService = "../../src/services";
+const funcionarioService = require("../../src/services/funcionarioService");
 
 describe("funcionarioService", () => {
   afterEach(() => {
@@ -55,7 +55,7 @@ describe("funcionarioService", () => {
 
   describe("criar", () => {
     const bodyValido = () => ({
-      nome_cliente: "Jesus Ezequiel Marcolongo dos Santos Lopes",
+      nome_funcionario: "Jesus Ezequiel Marcolongo dos Santos Lopes",
     });
 
     test("rejeita quando falta campo obrigatório", async () => {
@@ -139,7 +139,7 @@ describe("funcionarioService", () => {
       await expect(
         funcionarioService.atualizar("1", { ativo: "abc" }),
       ).rejects.toMatchObject({ statusCode: 400 });
-      expect(Funcionario.update).toHaveBeenCalled();
+      expect(Funcionario.update).not.toHaveBeenCalled();
     });
 
     test("atualiza só os campos válidos, convertendo tipos", async () => {
@@ -160,10 +160,6 @@ describe("funcionarioService", () => {
         campo_invalido: "ignorado",
       });
       expect(Funcionario.update).toHaveBeenCalledWith(1, {
-        nome_funcionario: "marcos",
-        ativo: 0,
-      });
-      expect(Funcionario.update).toHaveBeenCalledWith(1, {
         nome_funcionario: "Marcos",
         ativo: 0,
       })
@@ -173,7 +169,7 @@ describe("funcionarioService", () => {
         Funcionario.update.mockResolvedValue({ affectedRows: 1})
 
         await funcionarioService.atualizar("1", {
-            nome_cliente: "",
+            nome_funcionario: "",
             ativo: "1",
         })
         expect(Funcionario.update).toHaveBeenCalledWith(1, {ativo: 1})
