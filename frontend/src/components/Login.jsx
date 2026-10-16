@@ -1,6 +1,6 @@
 import './Login.css'
 
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 import chipImage from '../assets/chip.png'
 import chipIcon from '../assets/chip-icon.png'
@@ -8,6 +8,11 @@ import userIcon from '../assets/user.png'
 import lockIcon from '../assets/lock.png'
 
 function Login() {
+    const navigate = useNavigate()
+    
+    function irHome(){
+        navigate('/home')
+    }
     return (
         <div className="login-page">
 
@@ -138,7 +143,7 @@ function Login() {
 
 
                     {/* Botão */}
-                    <button className="btn login-button w-100">
+                    <button className="btn login-button w-100" type='button' onClick={irHome}>
                         Login
                         <span>→</span>
                     </button>
