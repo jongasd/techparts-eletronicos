@@ -9,11 +9,54 @@ const CAMPOS_PUBLICOS =
   "id_produto, id_categoria, nome_produto, quantidade_estoque, quantidade_minima, localizacao, preco, ativo, criado_em, atualizado_em";
 
 const Produto = {
-  // Lista só ativos — é o que qualquer tela normal do sistema deve consumir.
-  findAll: () =>
-    executarQuery(
-      `SELECT ${CAMPOS_PUBLICOS} FROM tbl_produtos WHERE ativo = 1 ORDER BY nome_produto ASC`,
-    ),
+  // Lista só ativos com suporte a paginação e filtros opcionais (Issue #13)
+  findAll: async ({ pagina, limite, busca, id_categoria } = {}) => {
+    let sql = `SELECT ${CAMPOS_PUBLICOS} FROM tbl_produtos WHERE ativo = 1`;
+    let sqlCount = "SELECT COUNT(*) as total FROM tbl_produtos WHERE ativo = 1";
+    const params = [];
+    const countParams = [];
+
+    if (busca) {
+      sql += " AND nome_produto LIKE ?";
+      sqlCount += " AND nome_produto LIKE ?";
+      params.push(`%${busca}%`);
+      countParams.push(`%${busca}%`);
+    }
+
+    if (id_categoria) {
+      sql += " AND id_categoria = ?";
+      sqlCount += " AND id_categoria = ?";
+      params.push(Number(id_categoria));
+      countParams.push(Number(id_categoria));
+    }
+
+    sql += " ORDER BY nome_produto ASC";
+
+    if (pagina !== undefined && limite !== undefined) {
+      const p = Math.max(1, Number(pagina) || 1);
+      const l = Math.max(1, Number(limite) || 20);
+      const offset = (p - 1) * l;
+
+      sql += " LIMIT ? OFFSET ?";
+      params.push(l, offset);
+
+      const [registros, countResult] = await Promise.all([
+        executarQuery(sql, params),
+        executarQuery(sqlCount, countParams),
+      ]);
+
+      const total = countResult[0]?.total || 0;
+      return {
+        registros,
+        total,
+        pagina: p,
+        limite: l,
+        totalPaginas: Math.ceil(total / l),
+      };
+    }
+
+    return executarQuery(sql, params);
+  },
 
   findById: async (id, conn) => {
     const resultado = await executarQuery(

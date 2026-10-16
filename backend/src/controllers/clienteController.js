@@ -3,8 +3,25 @@ const clienteService = require("../services/clienteService");
 const clienteController = {
   listarTodas: async (req, res, next) => {
     try {
-      const clientes = await clienteService.listarTodos();
-      res.json({ sucesso: true, dados: clientes, total: clientes.length });
+      const { pagina, limite, busca } = req.query;
+      const resultado = await clienteService.listarTodos({
+        pagina,
+        limite,
+        busca,
+      });
+
+      if (resultado && typeof resultado === "object" && !Array.isArray(resultado)) {
+        res.json({
+          sucesso: true,
+          dados: resultado.registros,
+          total: resultado.total,
+          pagina: resultado.pagina,
+          limite: resultado.limite,
+          totalPaginas: resultado.totalPaginas,
+        });
+      } else {
+        res.json({ sucesso: true, dados: resultado, total: resultado.length });
+      }
     } catch (erro) {
       next(erro);
     }
@@ -44,7 +61,7 @@ const clienteController = {
   excluir: async (req, res, next) => {
     try {
       await clienteService.excluir(req.params.id);
-      res.json({ sucesso: true, mensagem: "Cliente excluído com sucesso" });
+      res.json({ sucesso: true, mensagem: "Cliente desativado com sucesso" });
     } catch (erro) {
       next(erro);
     }

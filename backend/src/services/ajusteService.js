@@ -2,6 +2,12 @@ const Ajuste = require("../models/ajuste");
 const Produto = require("../models/produtos");
 const pool = require("../config/database");
 const AppError = require("../utils/appError");
+const {
+  parseId,
+  parseNumero,
+  parseData,
+  validarCamposObrigatorios,
+} = require("../utils/validadores");
 
 const CAMPOS_OBRIGATORIOS_CRIACAO = [
   "id_funcionario",
@@ -12,45 +18,6 @@ const CAMPOS_OBRIGATORIOS_CRIACAO = [
 ];
 
 const TIPOS_AJUSTE_VALIDOS = ["entrada", "saida", "correcao"];
-
-const parseId = (id) => {
-  const parsed = Number(id);
-  if (!Number.isInteger(parsed) || parsed <= 0) {
-    throw new AppError("ID inválido", 400);
-  }
-  return parsed;
-};
-
-const parseNumero = (campo, valor) => {
-  const numero = Number(valor);
-  if (Number.isNaN(numero) || !Number.isFinite(numero)) {
-    throw new AppError(`Campo "${campo}" precisa ser um número válido`, 400);
-  }
-  return numero;
-};
-
-const parseData = (campo, valor) => {
-  const data = new Date(valor);
-  if (Number.isNaN(data.getTime())) {
-    throw new AppError(`Campo "${campo}" precisa ser uma data válida`, 400);
-  }
-  return String(valor);
-};
-
-const validarCamposObrigatorios = (dados) => {
-  const faltando = CAMPOS_OBRIGATORIOS_CRIACAO.filter(
-    (campo) =>
-      dados[campo] === undefined ||
-      dados[campo] === null ||
-      dados[campo] === "",
-  );
-  if (faltando.length > 0) {
-    throw new AppError(
-      `Campos obrigatórios ausentes: ${faltando.join(", ")}`,
-      400,
-    );
-  }
-};
 
 const validarTipoAjuste = (tipo) => {
   if (!TIPOS_AJUSTE_VALIDOS.includes(tipo)) {
@@ -92,7 +59,7 @@ const ajusteService = {
   },
 
   criar: async (body) => {
-    validarCamposObrigatorios(body);
+    validarCamposObrigatorios(body, CAMPOS_OBRIGATORIOS_CRIACAO);
     validarTipoAjuste(body.tipo_ajuste);
     parseData("data_ajuste", body.data_ajuste);
 

@@ -52,8 +52,16 @@ const Funcionario = {
       id,
     ]),
 
+  // Mantido para uso interno (ex: cascade eventual ou admin DB).
+  // No fluxo normal da API, use deactivate().
   delete: (id) =>
     executarQuery("DELETE FROM tbl_funcionario WHERE id_funcionario = ?", [id]),
+
+  deactivate: (id) =>
+    executarQuery(
+      "UPDATE tbl_funcionario SET ativo = 0 WHERE id_funcionario = ?",
+      [id],
+    ),
 };
 
 module.exports = Funcionario;

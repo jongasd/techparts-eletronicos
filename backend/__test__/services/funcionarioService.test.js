@@ -175,4 +175,41 @@ describe("funcionarioService", () => {
         expect(Funcionario.update).toHaveBeenCalledWith(1, {ativo: 1})
     })
   });
+
+  describe("excluir", () => {
+    test("404 quando funcionario não existe", async () => {
+      Funcionario.findById.mockResolvedValue(null);
+
+      await expect(funcionarioService.excluir("1")).rejects.toMatchObject({
+        statusCode: 404,
+      });
+      expect(Funcionario.deactivate).not.toHaveBeenCalled();
+    });
+
+    test("409 quando funcionario já está inativo", async () => {
+      Funcionario.findById.mockResolvedValue({ id_funcionario: 1, ativo: 0 });
+
+      await expect(funcionarioService.excluir("1")).rejects.toMatchObject({
+        statusCode: 409,
+      });
+      expect(Funcionario.deactivate).not.toHaveBeenCalled();
+    });
+
+    test("desativa funcionario ativo corretamente (soft delete)", async () => {
+      Funcionario.findById.mockResolvedValue({ id_funcionario: 1, ativo: 1 });
+      Funcionario.deactivate.mockResolvedValue({ affectedRows: 1 });
+
+      await funcionarioService.excluir("1");
+
+      expect(Funcionario.deactivate).toHaveBeenCalledWith(1);
+      expect(Funcionario.delete).not.toHaveBeenCalled();
+    });
+
+    test("rejeita id inválido sem chamar o banco", async () => {
+      await expect(funcionarioService.excluir("abc")).rejects.toMatchObject({
+        statusCode: 400,
+      });
+      expect(Funcionario.findById).not.toHaveBeenCalled();
+    });
+  });
 });

@@ -1,4 +1,5 @@
 const funcionarioService = require("../services/funcionarioService");
+const Auditoria = require("../models/auditoria");
 
 const funcionarioController = {
   listarTodas: async (req, res, next) => {
@@ -26,6 +27,16 @@ const funcionarioController = {
   criar: async (req, res, next) => {
     try {
       const novoId = await funcionarioService.criar(req.body);
+
+      await Auditoria.create({
+        id_funcionario: req.funcionario?.id_funcionario,
+        acao: "CRIAR_FUNCIONARIO",
+        recurso: "funcionarios",
+        id_recurso: novoId,
+        detalhes: req.body,
+        ip: req.ip,
+      });
+
       res.status(201).json({
         sucesso: true,
         mensagem: "Funcionário criado com sucesso",
@@ -39,6 +50,16 @@ const funcionarioController = {
   atualizar: async (req, res, next) => {
     try {
       await funcionarioService.atualizar(req.params.id, req.body);
+
+      await Auditoria.create({
+        id_funcionario: req.funcionario?.id_funcionario,
+        acao: "ATUALIZAR_FUNCIONARIO",
+        recurso: "funcionarios",
+        id_recurso: req.params.id,
+        detalhes: req.body,
+        ip: req.ip,
+      });
+
       res.json({
         sucesso: true,
         mensagem: "Funcionário atualizado com sucesso",
@@ -51,7 +72,16 @@ const funcionarioController = {
   excluir: async (req, res, next) => {
     try {
       await funcionarioService.excluir(req.params.id);
-      res.json({ sucesso: true, mensagem: "Funcionário excluído com sucesso" });
+
+      await Auditoria.create({
+        id_funcionario: req.funcionario?.id_funcionario,
+        acao: "DESATIVAR_FUNCIONARIO",
+        recurso: "funcionarios",
+        id_recurso: req.params.id,
+        ip: req.ip,
+      });
+
+      res.json({ sucesso: true, mensagem: "Funcionário desativado com sucesso" });
     } catch (erro) {
       next(erro);
     }

@@ -1,44 +1,14 @@
 const Cliente = require("../models/cliente");
 const AppError = require("../utils/appError");
+const {
+  parseId,
+  parseAtivo,
+  validarCamposObrigatorios,
+} = require("../utils/validadores");
 
 const CAMPOS_OBRIGATORIOS_CRIACAO = ["nome_cliente"];
 
 const CAMPOS_ATUALIZAVEIS = ["nome_cliente", "ativo"];
-
-const parseId = (id) => {
-  const parsed = Number(id);
-  if (!Number.isInteger(parsed) || parsed <= 0) {
-    throw new AppError("ID inválido", 400);
-  }
-  return parsed;
-};
-
-// Faltava em criar() e atualizar(): ativo era Number(body.ativo) sem
-// validar o resultado, então qualquer valor (2, "abc" -> NaN, -1) ia
-// direto pro banco.
-const parseAtivo = (valor) => {
-  const numero = Number(valor);
-  if (![0, 1].includes(numero)) {
-    throw new AppError('Campo "ativo" precisa ser 0 ou 1', 400);
-  }
-  return numero;
-};
-
-const validarCamposObrigatorios = (dados) => {
-  const faltando = CAMPOS_OBRIGATORIOS_CRIACAO.filter(
-    (campo) =>
-      dados[campo] === undefined ||
-      dados[campo] === null ||
-      dados[campo] === "",
-  );
-
-  if (faltando.length > 0) {
-    throw new AppError(
-      `Campos obrigatórios ausentes: ${faltando.join(", ")}`,
-      400,
-    );
-  }
-};
 
 const extrairCamposAtualizaveis = (body) => {
   return CAMPOS_ATUALIZAVEIS.reduce((acc, campo) => {
@@ -53,7 +23,7 @@ const extrairCamposAtualizaveis = (body) => {
 };
 
 const clienteService = {
-  listarTodos: () => Cliente.findAll(),
+  listarTodos: (opcoes = {}) => Cliente.findAll(opcoes),
 
   buscarPorId: async (id) => {
     const idValido = parseId(id);
@@ -67,7 +37,7 @@ const clienteService = {
   },
 
   criar: async (body) => {
-    validarCamposObrigatorios(body);
+    validarCamposObrigatorios(body, CAMPOS_OBRIGATORIOS_CRIACAO);
 
     const dados = {
       nome_cliente: String(body.nome_cliente).trim(),
@@ -96,11 +66,17 @@ const clienteService = {
 
   excluir: async (id) => {
     const idValido = parseId(id);
-    const resultado = await Cliente.delete(idValido);
+    const cliente = await Cliente.findById(idValido);
 
-    if (resultado.affectedRows === 0) {
+    if (!cliente) {
       throw new AppError("Cliente não encontrado", 404);
     }
+
+    if (cliente.ativo === 0) {
+      throw new AppError("Cliente já está inativo", 409);
+    }
+
+    await Cliente.deactivate(idValido);
   },
 };
 

@@ -128,6 +128,44 @@ const authService = {
       throw erro;
     }
   },
+  trocarSenha: async (idFuncionario, { senha_atual, senha_nova }) => {
+    if (!senha_atual || !senha_nova) {
+      throw new AppError("senha_atual e senha_nova são obrigatórias", 400);
+    }
+
+    if (senha_nova.length < 8) {
+      throw new AppError("Nova senha deve ter ao menos 8 caracteres", 400);
+    }
+
+    if (senha_atual === senha_nova) {
+      throw new AppError(
+        "Nova senha deve ser diferente da senha atual",
+        400,
+      );
+    }
+
+    // Busca o hash pelo ID do funcionário autenticado
+    const [rows] = await pool.query(
+      "SELECT senha_hash FROM tbl_funcionario WHERE id_funcionario = ? AND ativo = 1",
+      [idFuncionario],
+    );
+    const funcionario = rows[0];
+
+    if (!funcionario) {
+      throw new AppError("Funcionário não encontrado", 404);
+    }
+
+    const senhaConfere = await bcrypt.compare(senha_atual, funcionario.senha_hash);
+    if (!senhaConfere) {
+      throw new AppError("Senha atual incorreta", 401);
+    }
+
+    const novo_hash = await bcrypt.hash(senha_nova, SALT_ROUNDS);
+    await pool.query(
+      "UPDATE tbl_funcionario SET senha_hash = ? WHERE id_funcionario = ?",
+      [novo_hash, idFuncionario],
+    );
+  },
 };
 
 module.exports = authService;

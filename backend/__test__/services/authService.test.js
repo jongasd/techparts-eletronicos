@@ -250,4 +250,68 @@ describe("authService", () => {
       );
     });
   });
+
+  describe("trocarSenha", () => {
+    const ID = 1;
+
+    test("rejeita quando falta senha_atual ou senha_nova", async () => {
+      await expect(
+        authService.trocarSenha(ID, { senha_atual: "", senha_nova: "nova1234" }),
+      ).rejects.toMatchObject({ statusCode: 400 });
+
+      await expect(
+        authService.trocarSenha(ID, { senha_atual: "antiga1234", senha_nova: "" }),
+      ).rejects.toMatchObject({ statusCode: 400 });
+
+      expect(pool.query).not.toHaveBeenCalled();
+    });
+
+    test("rejeita nova senha com menos de 8 caracteres", async () => {
+      await expect(
+        authService.trocarSenha(ID, { senha_atual: "antiga1234", senha_nova: "curta" }),
+      ).rejects.toMatchObject({ statusCode: 400 });
+    });
+
+    test("rejeita quando senha_nova === senha_atual", async () => {
+      await expect(
+        authService.trocarSenha(ID, { senha_atual: "mesma1234", senha_nova: "mesma1234" }),
+      ).rejects.toMatchObject({ statusCode: 400 });
+    });
+
+    test("404 quando funcionario não encontrado", async () => {
+      pool.query.mockResolvedValue([[]]); // rows vazio
+
+      await expect(
+        authService.trocarSenha(ID, { senha_atual: "antiga1234", senha_nova: "nova1234!" }),
+      ).rejects.toMatchObject({ statusCode: 404 });
+    });
+
+    test("401 quando senha atual está incorreta", async () => {
+      pool.query.mockResolvedValue([[{ senha_hash: "hash-real" }]]);
+      bcrypt.compare.mockResolvedValue(false);
+
+      await expect(
+        authService.trocarSenha(ID, { senha_atual: "errada123", senha_nova: "nova1234!" }),
+      ).rejects.toMatchObject({ statusCode: 401 });
+    });
+
+    test("atualiza hash quando tudo está correto", async () => {
+      pool.query
+        .mockResolvedValueOnce([[{ senha_hash: "hash-antigo" }]]) // SELECT
+        .mockResolvedValueOnce([{ affectedRows: 1 }]);            // UPDATE
+      bcrypt.compare.mockResolvedValue(true);
+      bcrypt.hash.mockResolvedValue("hash-novo");
+
+      await authService.trocarSenha(ID, {
+        senha_atual: "antiga1234",
+        senha_nova: "nova1234!",
+      });
+
+      expect(bcrypt.hash).toHaveBeenCalledWith("nova1234!", 10);
+      expect(pool.query).toHaveBeenLastCalledWith(
+        expect.stringContaining("UPDATE tbl_funcionario SET senha_hash"),
+        ["hash-novo", ID],
+      );
+    });
+  });
 });

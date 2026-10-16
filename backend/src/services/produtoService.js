@@ -1,5 +1,10 @@
 const Produto = require("../models/produtos");
 const AppError = require("../utils/appError");
+const {
+  parseId,
+  parseNumero,
+  validarCamposObrigatorios,
+} = require("../utils/validadores");
 
 const CAMPOS_OBRIGATORIOS_CRIACAO = [
   "id_categoria",
@@ -29,39 +34,6 @@ const CAMPOS_ATUALIZAVEIS = [
 // parseNumero, não por String().trim().
 const CAMPOS_TEXTO = ["nome_produto", "localizacao"];
 
-const parseId = (id) => {
-  const parsed = Number(id);
-  if (!Number.isInteger(parsed) || parsed <= 0) {
-    throw new AppError("ID inválido", 400);
-  }
-  return parsed;
-};
-
-// Antes: Number(valor) direto, e um preço/quantidade inválido virava NaN
-// silenciosamente e ia pro UPDATE/INSERT sem erro nenhum. Agora rejeita.
-const parseNumero = (campo, valor) => {
-  const numero = Number(valor);
-  if (Number.isNaN(numero) || !Number.isFinite(numero)) {
-    throw new AppError(`Campo "${campo}" precisa ser um número válido`, 400);
-  }
-  return numero;
-};
-
-const validarCamposObrigatorios = (dados) => {
-  const faltando = CAMPOS_OBRIGATORIOS_CRIACAO.filter(
-    (campo) =>
-      dados[campo] === undefined ||
-      dados[campo] === null ||
-      dados[campo] === "",
-  );
-  if (faltando.length > 0) {
-    throw new AppError(
-      `Campos obrigatórios ausentes: ${faltando.join(", ")}`,
-      400,
-    );
-  }
-};
-
 const extrairCamposAtualizaveis = (body) => {
   return CAMPOS_ATUALIZAVEIS.reduce((acc, campo) => {
     if (
@@ -81,7 +53,7 @@ const extrairCamposAtualizaveis = (body) => {
 };
 
 const produtoService = {
-  listarTodas: () => Produto.findAll(),
+  listarTodas: (opcoes = {}) => Produto.findAll(opcoes),
 
   buscarPorId: async (id) => {
     const idValido = parseId(id);
@@ -95,7 +67,7 @@ const produtoService = {
   },
 
   criar: async (body) => {
-    validarCamposObrigatorios(body);
+    validarCamposObrigatorios(body, CAMPOS_OBRIGATORIOS_CRIACAO);
 
     const ativo = body.ativo === undefined ? 1 : Number(body.ativo);
     if (![0, 1].includes(ativo)) {
