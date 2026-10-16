@@ -40,6 +40,16 @@ const loteModel = {
     );
   },
 
+  // Inverso de abaterQuantidade: usado na devolução. O CHECK
+  // (quantidade_atual <= quantidade_inicial) do schema é a rede de segurança
+  // caso alguém tente devolver mais do que o lote já deu.
+  devolverQuantidade: async (conn, id_lote, quantidade) => {
+    await conn.query(
+      `UPDATE tbl_lote SET quantidade_atual = quantidade_atual + ? WHERE id_lote = ?`,
+      [quantidade, id_lote],
+    );
+  },
+
   registrarConsumo: async (conn, id_item_saida, id_lote, quantidade) => {
     await conn.query(
       `INSERT INTO tbl_saida_lote (id_item_saida, id_lote, quantidade) VALUES (?, ?, ?)`,

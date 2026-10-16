@@ -1,9 +1,9 @@
 const ajusteService = require("../services/ajusteService");
 
 const ajusteController = {
-  listarTodas: async (req, res, next) => {
+  listarTodos: async (req, res, next) => {
     try {
-      const ajustes = await ajusteService.listarTodas();
+      const ajustes = await ajusteService.listarTodos();
       res.json({ sucesso: true, dados: ajustes, total: ajustes.length });
     } catch (erro) {
       next(erro);

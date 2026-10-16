@@ -1,12 +1,9 @@
 const pool = require("../config/database");
 
-const executarQuery = (sql, valores = []) =>
-  new Promise((resolve, reject) => {
-    pool.query(sql, valores, (erro, resultado) => {
-      if (erro) return reject(erro);
-      resolve(resultado);
-    });
-  });
+const executarQuery = async (sql, valores = [], conn = pool) => {
+  const [resultado] = await conn.query(sql, valores);
+  return resultado;
+};
 
 const CAMPOS_PUBLICOS = "id_categoria, nome";
 

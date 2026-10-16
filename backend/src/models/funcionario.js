@@ -33,7 +33,7 @@ const Funcionario = {
   // Usado só internamente pelo authService pra comparar a senha no login.
   findByLoginComSenha: async (login) => {
     const resultado = await executarQuery(
-      "SELECT id_funcionario, nome_funcionario, login, senha_hash, ativo FROM tbl_funcionario WHERE login = ?",
+      "SELECT id_funcionario, nome_funcionario, login, senha_hash, ativo, id_role FROM tbl_funcionario WHERE login = ?",
       [login],
     );
     return resultado[0] ?? null;
