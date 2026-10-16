@@ -3,9 +3,9 @@ import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
-import Login from './components/Login'
-import Register from './components/Register'
-import Home from './components/Home'
+import Login from './pages/Login/Login'
+import Register from './pages/Register/Register'
+import Home from './pages/Home/Home'
 
 function App() {
     return (

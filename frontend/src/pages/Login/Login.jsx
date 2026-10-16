@@ -2,10 +2,10 @@ import './Login.css'
 
 import { Link, useNavigate } from 'react-router-dom'
 
-import chipImage from '../assets/chip.png'
-import chipIcon from '../assets/chip-icon.png'
-import userIcon from '../assets/user.png'
-import lockIcon from '../assets/lock.png'
+import chipImage from '../../assets/chip.png'
+import chipIcon from '../../assets/chip-icon.png'
+import userIcon from '../../assets/user.png'
+import lockIcon from '../../assets/lock.png'
 
 function Login() {
     const navigate = useNavigate()

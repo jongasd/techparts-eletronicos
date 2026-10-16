@@ -3,9 +3,9 @@ import './Register.css'
 import { Link, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 
-import chipImage from '../assets/chip.png'
-import chipIcon from '../assets/chip-icon.png'
-import lockIcon from '../assets/lock.png'
+import chipImage from '../../assets/chip.png'
+import chipIcon from '../../assets/chip-icon.png'
+import lockIcon from '../../assets/lock.png'
 
 function Register() {
     const navigate = useNavigate()

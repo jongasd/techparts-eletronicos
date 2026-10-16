@@ -1,17 +1,17 @@
 
 import './Home.css';
 
-import dashboardIcon from '../assets/dashboard-icon.png';
-import sistemaIcon from '../assets/config-icon.png';
-import produtosIcon from '../assets/products-icon.png';
-import estoqueIcon from '../assets/stock-icon.png';
-import funcionariosIcon from '../assets/workers-icon.png';
-import clientesIcon from '../assets/customers-icon.png';
+import dashboardIcon from '../../assets/dashboard-icon.png';
+import sistemaIcon from '../../assets/config-icon.png';
+import produtosIcon from '../../assets/products-icon.png';
+import estoqueIcon from '../../assets/stock-icon.png';
+import funcionariosIcon from '../../assets/workers-icon.png';
+import clientesIcon from '../../assets/customers-icon.png';
 
-import perfilIcon from '../assets/pfp-icon.png';
-import notificacoesIcon from '../assets/notification-icon.png';
-import configuracoesIcon from '../assets/config-icon.png';
-import ajudaIcon from '../assets/help-icon.png';
+import perfilIcon from '../../assets/pfp-icon.png';
+import notificacoesIcon from '../../assets/notification-icon.png';
+import configuracoesIcon from '../../assets/config-icon.png';
+import ajudaIcon from '../../assets/help-icon.png';
 
 const modulos = [
     { nome: 'Dashboard', icone: dashboardIcon },
