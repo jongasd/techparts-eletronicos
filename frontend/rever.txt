@@ -1,0 +1,5 @@
+problemas techparts front
+
+login e cadastro - logo não fica centralizada no retângulo azul quando a tela é menor
+
+cadastro - a "Barra" divisora da esquerda fica maior; colocar limite de dígitos no cpf e no telefone; não deixar números negativos; não deixar adicionar + ou -; tirar as setas que aparecem para aumentar ou diminuir o número, permitindo apenas a digitação
