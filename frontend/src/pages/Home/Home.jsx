@@ -1,28 +1,20 @@
 
 import './Home.css';
+import { useNavigate } from 'react-router-dom';
 
-import dashboardIcon from '../../assets/dashboard-icon.png';
-import sistemaIcon from '../../assets/config-icon.png';
-import produtosIcon from '../../assets/products-icon.png';
-import estoqueIcon from '../../assets/stock-icon.png';
-import funcionariosIcon from '../../assets/workers-icon.png';
-import clientesIcon from '../../assets/customers-icon.png';
-
-import perfilIcon from '../../assets/pfp-icon.png';
-import notificacoesIcon from '../../assets/notification-icon.png';
-import configuracoesIcon from '../../assets/config-icon.png';
-import ajudaIcon from '../../assets/help-icon.png';
+import icones from '../../assets/icones'
 
 const modulos = [
-    { nome: 'Dashboard', icone: dashboardIcon },
-    { nome: 'Sistema', icone: sistemaIcon },
-    { nome: 'Produtos', icone: produtosIcon },
-    { nome: 'Estoque', icone: estoqueIcon },
-    { nome: 'Funcionários', icone: funcionariosIcon },
-    { nome: 'Clientes', icone: clientesIcon },
+    { nome: 'Dashboard', icone: icones.dashboard, rota: '/dashboard'},
+    { nome: 'Sistema', icone: icones.sistema, rota: '/sistema'},
+    { nome: 'Produtos', icone: icones.produtos, rota: '/produtos'},
+    { nome: 'Estoque', icone: icones.estoque, rota: '/estoque'},
+    { nome: 'Funcionários', icone: icones.funcionarios, rota: '/funcionarios'},
+    { nome: 'Clientes', icone: icones.clientes, rota: '/clientes'},
 ];
 
 function Home() {
+    const navigate = useNavigate()
     return (
         <div className="home-page">
 
@@ -35,10 +27,10 @@ function Home() {
                 </div>
 
                 <nav className="header-actions" aria-label="Ações do usuário">
-                    <button type="button" className="profile-action">
+                    <button type="button" className="profile-action" onClick={() => navigate('/perfil')}>
                         <span>PERFIL</span>
                         <img
-                            src={perfilIcon}
+                            src={icones.perfil}
                             alt=""
                             className="header-icon-image"
                         />
@@ -46,7 +38,7 @@ function Home() {
 
                     <button type="button" aria-label="Notificações">
                         <img
-                            src={notificacoesIcon}
+                            src={icones.notificacoes}
                             alt=""
                             className="header-icon-image"
                         />
@@ -54,7 +46,7 @@ function Home() {
 
                     <button type="button" aria-label="Configurações">
                         <img
-                            src={configuracoesIcon}
+                            src={icones.configuracoes}
                             alt=""
                             className="header-icon-image"
                         />
@@ -62,7 +54,7 @@ function Home() {
 
                     <button type="button" aria-label="Ajuda">
                         <img
-                            src={ajudaIcon}
+                            src={icones.ajuda}
                             alt=""
                             className="header-icon-image"
                         />
@@ -87,9 +79,7 @@ function Home() {
                             type="button"
                             className="module-card"
                             key={modulo.nome}
-                            onClick={() => console.log(
-                                `Módulo selecionado: ${modulo.nome}`
-                            )}
+                            onClick={() => navigate(modulo.rota)}
                         >
                             <span className="module-icon">
                                 <img

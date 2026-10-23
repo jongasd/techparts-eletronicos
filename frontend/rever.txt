@@ -1,5 +1,96 @@
 problemas techparts front
 
-login e cadastro - logo não fica centralizada no retângulo azul quando a tela é menor
+# LOGIN
+- logo não fica centralizada
 
-cadastro - a "Barra" divisora da esquerda fica maior; colocar limite de dígitos no cpf e no telefone; não deixar números negativos; não deixar adicionar + ou -; tirar as setas que aparecem para aumentar ou diminuir o número, permitindo apenas a digitação
+# CADASTRO 
+- logo não fica centralizada
+- retângulo azul (divisor) aumenta quando a tela é normal (pc/tablet)
+- NOME COMPLETO: há como digitar números
+- CPF E TELEFONE: não há limite de dígitos
+- CPF E TELEFONE: há como deixar números negativos
+- CPF, TELEFONE E NOME COMPLETO: há como digitar caracteres especiais
+- CPF E TELEFONE: existe setas que aparecem para aumentar ou diminuir o número
+- TELEFONE: nome do campo muito grudado ao retângulo de cima
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+DASHBOARD:
+
+Giro de estoque --> O que deveria ser? Tem no back?
+
+R: Dias para reposição de estoque
+
+# PRECISA
+## MUDADO!!!!!!!!!!!!!!!!
+-------------------------------------------------
+
+Margem bruta --> Tem no back?
+
+R:Não
+
+# PRECISA
+## ????????????????????
+-------------------------------------------------
+
+Ativos totais --> O que deveria ser? Tem no back?
+
+R: Nem ideia, e não tem no back, mas acho que da pra adicionar tranquilamente
+
+# PRECISA
+## MUDADO!!!!!!!!!!!!!!!!
+-------------------------------------------------
+
+Saúde do sistema operacional --> O que deveria ser? Tem no back?
+
+R: Como ta rodando o sistema, tipo se ta sobrecarregado e tals (não sei nem como coloca isso no back)
+
+# NÃO PRECISA, TROQUE A INFO!
+-------------------------------------------------
+
+Visão geral de clientes --> O que deveria ser:
+
+- NOVOS (30 DIAS); Tem no back?
+
+R: Sim
+
+# PRECISA
+-------------------------------------------------
+
+- CHURN RATE; Tem no back?
+
+R: Não sei o que é isso, mas deve ter
+
+# PESQUISAR / PERGUNTAR AO CHAT
+## MANTER
+-------------------------------------------------
+
+- IN, ME e TC em Principais clientes por volume; Tem no back?
+
+R: Não, mas da pra colocar tranquilamente.
+
+# PESQUISAR / PERGUNTAR AO CHAT
+## EFEITO MOUSE HOVER COM NOME DE EMPRESAS FICTÍCIAS

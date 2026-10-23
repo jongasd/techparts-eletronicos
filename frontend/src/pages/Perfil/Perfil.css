@@ -1,0 +1,308 @@
+
+* {
+    box-sizing: border-box;
+}
+
+.perfil-page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: #f3f3f3;
+    color: #073b60;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.perfil-header {
+    min-height: 65px;
+    padding: 0 32px;
+    background: #06395c;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    color: white;
+}
+
+.perfil-brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.perfil-brand .brand-name {
+    font-size: 20px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.brand-divider {
+    height: 20px;
+    width: 1px;
+    background: #8298aa;
+}
+
+.brand-panel {
+    color: #d0dce8;
+    font-size: 14px;
+}
+
+.perfil-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+.perfil-header-actions button {
+    padding: 4px;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+}
+
+.perfil-header-actions img {
+    display: block;
+    width: 23px;
+    height: 23px;
+    object-fit: contain;
+}
+
+.perfil-main {
+    flex: 1;
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 70px 55px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 2px minmax(0, 1.15fr);
+    align-items: center;
+    gap: 68px;
+}
+
+.perfil-identidade {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    min-width: 0;
+}
+
+.foto-botao {
+    width: 260px;
+    height: 260px;
+    padding: 0;
+    border: 4px solid white;
+    border-radius: 50%;
+    background: #dce3e8;
+    overflow: hidden;
+    cursor: pointer;
+    box-shadow: 0 8px 30px #00000020;
+}
+
+.foto-perfil {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.perfil-identidade h1 {
+    margin: 30px 0 6px;
+    font-size: clamp(30px, 3vw, 48px);
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}
+
+.perfil-identidade p {
+    margin: 0;
+    color: #526e7f;
+    font-size: 16px;
+}
+
+.remover-foto {
+    margin-top: 26px;
+    border: none;
+    background: transparent;
+    color: #d71919;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.perfil-divisor {
+    width: 2px;
+    height: 100%;
+    min-height: 400px;
+    background: #1766a2;
+}
+
+.perfil-formulario {
+    width: 100%;
+    min-width: 0;
+}
+
+.perfil-formulario h2 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 400;
+}
+
+.perfil-titulo-linha {
+    width: 50px;
+    height: 4px;
+    margin: 10px 0 40px;
+    border-radius: 4px;
+    background: #06395c;
+}
+
+.perfil-formulario form {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.campo {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    gap: 8px;
+}
+
+.campo label {
+    color: #777f89;
+    font-size: 12px;
+    letter-spacing: 1.2px;
+}
+
+.campo input,
+.campo textarea {
+    width: 100%;
+    min-width: 0;
+    min-height: 50px;
+    padding: 13px 17px;
+    border: 1px solid #e7e7e7;
+    border-radius: 9px;
+    background: white;
+    color: #727c8d;
+    font: inherit;
+    box-shadow: 0 4px 5px #00000030;
+}
+
+.campo textarea {
+    resize: vertical;
+}
+
+.campo input:read-only,
+.campo textarea:read-only {
+    background: #fff;
+    cursor: default;
+}
+
+.campos-duplos {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+}
+
+.salvar-perfil {
+    width: 100%;
+    min-height: 58px;
+    padding: 14px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(100deg, #06395c, #24547e);
+    color: white;
+    font-size: 16px;
+    font-weight: 700;
+    box-shadow: 0 5px 7px #00000035;
+    cursor: pointer;
+    transition: filter 0.2s ease;
+}
+
+.salvar-perfil:hover {
+    filter: brightness(1.12);
+}
+
+.perfil-footer {
+    min-height: 51px;
+    padding: 12px 32px;
+    background: #06395c;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    color: #86a6c1;
+    font-size: 13px;
+}
+
+.perfil-footer nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 28px;
+}
+
+.perfil-footer a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.perfil-footer a:hover {
+    color: white;
+    text-decoration: underline;
+}
+
+@media (max-width: 900px) {
+    .perfil-main {
+        padding: 48px 28px;
+        gap: 32px;
+    }
+
+    .foto-botao {
+        width: 190px;
+        height: 190px;
+    }
+
+    .campos-duplos {
+        gap: 16px;
+    }
+}
+
+@media (max-width: 650px) {
+    .perfil-header {
+        padding: 14px 18px;
+        flex-wrap: wrap;
+    }
+
+    .perfil-main {
+        grid-template-columns: 1fr;
+        padding: 36px 22px;
+        gap: 32px;
+    }
+
+    .perfil-divisor {
+        width: 100%;
+        min-height: 2px;
+        height: 2px;
+    }
+
+    .foto-botao {
+        width: 170px;
+        height: 170px;
+    }
+
+    .perfil-formulario h2 {
+        font-size: 22px;
+    }
+
+    .campos-duplos {
+        grid-template-columns: 1fr;
+    }
+
+    .perfil-footer {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 20px;
+    }
+
+    .perfil-header-actions {
+        gap: 18px;
+    }
+}
