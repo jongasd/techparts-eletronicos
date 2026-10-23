@@ -1,0 +1,336 @@
+
+/* Configurações gerais */
+.home-page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    font-family: Arial, Helvetica, sans-serif;
+    background-color: #f3f4f6;
+    color: #ffffff;
+}
+
+/* Cabeçalho */
+.home-header {
+    min-height: 65px;
+    padding: 0 32px;
+    background-color: #06395c;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.home-brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.brand-name {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+.brand-divider {
+    width: 1px;
+    height: 20px;
+    background-color: rgba(255, 255, 255, 0.4);
+}
+
+.brand-panel {
+    color: #d0dce8;
+    font-size: 14px;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+.header-actions button {
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    color: #ffffff;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+
+.header-actions button:hover {
+    opacity: 0.75;
+}
+
+.header-actions button:focus-visible,
+.module-card:focus-visible {
+    outline: 3px solid #9bc9ff;
+    outline-offset: 4px;
+}
+
+.profile-action span {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+/* Banner */
+.home-hero {
+    min-height: 225px;
+    padding: 48px 24px;
+    background: linear-gradient(
+        110deg,
+        #214f79 0%,
+        #28577f 100%
+    );
+    border-bottom: 2px solid #17466e;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.home-hero h1 {
+    margin: 0 0 14px;
+    font-size: clamp(28px, 3.4vw, 48px);
+    font-weight: 700;
+    letter-spacing: -1.2px;
+    line-height: 1.2;
+}
+
+.home-hero p {
+    margin: 0;
+    color: #91b8df;
+    font-size: clamp(14px, 1.5vw, 19px);
+    line-height: 1.6;
+}
+
+/* Área dos cartões */
+.home-main {
+    flex: 1;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 64px 32px;
+}
+
+.modules-grid {
+    width: 100%;
+    max-width: 1114px;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px;
+}
+
+/* Cartões */
+.module-card {
+    min-height: 203px;
+    padding: 28px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 25px;
+
+    color: #ffffff;
+    background-color: #24547e;
+    border: none;
+    border-radius: 13px;
+    box-shadow: 0 7px 5px rgba(0, 0, 0, 0.32);
+
+    cursor: pointer;
+    transition:
+        transform 0.2s ease,
+        background-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+/* Imagens dos ícones dos cartões */
+.module-icon-image {
+    width: 38px;
+    height: 38px;
+    object-fit: contain;
+}
+
+/* Imagens dos ícones do cabeçalho */
+.header-icon-image {
+    width: 23px;
+    height: 23px;
+    object-fit: contain;
+    display: block;
+}
+
+/* Ajuste dos ícones em celulares */
+@media (max-width: 600px) {
+    .module-icon-image {
+        width: 32px;
+        height: 32px;
+    }
+}
+
+.module-card:hover {
+    background-color: #2b628f;
+    transform: translateY(-3px);
+    box-shadow: 0 10px 12px rgba(0, 0, 0, 0.22);
+}
+
+.module-icon {
+    width: 82px;
+    height: 82px;
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background-color: #37658d;
+    border-radius: 50%;
+    box-shadow: 0 4px 4px rgba(0, 0, 0, 0.22);
+}
+
+.module-name {
+    font-size: 20px;
+    font-weight: 600;
+    text-align: center;
+    line-height: 1.3;
+}
+
+/* Rodapé */
+.home-footer {
+    min-height: 51px;
+    padding: 12px 32px;
+    background-color: #06395c;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    color: #86a6c1;
+    font-size: 13px;
+}
+
+.home-footer nav {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+}
+
+.home-footer a {
+    color: #86a6c1;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.home-footer a:hover {
+    color: #ffffff;
+    text-decoration: underline;
+}
+
+/* Tablets */
+@media (max-width: 900px) {
+    .home-main {
+        padding: 48px 28px;
+    }
+
+    .modules-grid {
+        gap: 20px;
+    }
+
+    .module-card {
+        min-height: 180px;
+    }
+
+    .module-name {
+        font-size: 18px;
+    }
+
+    .header-actions {
+        gap: 14px;
+    }
+}
+
+/* Celulares */
+@media (max-width: 600px) {
+    .home-header {
+        padding: 14px 18px;
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .brand-name {
+        font-size: 18px;
+    }
+
+    .header-actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .home-hero {
+        min-height: 190px;
+        padding: 36px 20px;
+    }
+
+    .home-hero h1 {
+        letter-spacing: -0.5px;
+    }
+
+    .home-main {
+        padding: 32px 20px;
+    }
+
+    .modules-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+    }
+
+    .module-card {
+        min-height: 155px;
+        padding: 20px 10px;
+        gap: 18px;
+        border-radius: 10px;
+    }
+
+    .module-icon {
+        width: 65px;
+        height: 65px;
+    }
+
+    .module-icon svg {
+        width: 32px;
+        height: 32px;
+    }
+
+    .module-name {
+        font-size: 16px;
+    }
+
+    .home-footer {
+        align-items: flex-start;
+        flex-direction: column;
+        padding: 20px;
+        gap: 16px;
+    }
+
+    .home-footer nav {
+        flex-wrap: wrap;
+        gap: 12px 20px;
+    }
+}
+
+/* Celulares estreitos */
+@media (max-width: 360px) {
+    .modules-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .brand-panel {
+        font-size: 12px;
+    }
+}

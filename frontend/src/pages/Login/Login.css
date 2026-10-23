@@ -1,0 +1,536 @@
+/* =========================
+   PÁGINA
+========================= */
+
+.login-page {
+    min-height: 100vh;
+
+    display: flex;
+
+    background-color: #f1f2f4;
+}
+
+
+/* =========================
+   LADO ESQUERDO
+========================= */
+
+.login-brand {
+    
+    width: 50%;
+    
+    min-height: 100vh;
+
+    position: relative;
+
+    overflow: hidden;
+
+    background-color: #285b86;
+
+    color: white;
+}
+
+
+/* Conteúdo superior */
+
+.brand-content {
+    position: relative;
+
+    z-index: 2;
+
+    text-align: center;
+
+    padding-top: 82px;
+}
+
+
+.chip-icon {
+    width: 70px;
+
+    height: 70px;
+
+    margin: 0 auto 20px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    background-color: #c7e3f4;
+
+    border-radius: 12px;
+}
+
+
+.chip-icon img {
+    width: 43px;
+    height: 43px;
+
+    object-fit: contain;
+}
+
+
+.brand-content h1 {
+    margin: 0;
+
+    font-size: 30px;
+
+    font-weight: 700;
+}
+
+
+.brand-content h1 span {
+    color: #a8c9e1;
+}
+
+
+.brand-content p {
+    margin-top: 26px;
+
+    color: #91b9d9;
+
+    font-size: 20px;
+}
+
+
+/* =========================
+   IMAGEM DO CHIP
+========================= */
+
+.chip-background {
+    position: absolute;
+
+    left: 0;
+    bottom: 0;
+
+    width: 100%;
+    height: 61%;
+
+    overflow: hidden;
+}
+
+
+.chip-background img {
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+
+    object-position: center;
+}
+
+
+/* Escurece a parte superior da imagem */
+
+.chip-background::before {
+    content: "";
+
+    position: absolute;
+
+    z-index: 1;
+
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 100%;
+
+    background:
+        linear-gradient(
+            to bottom,
+            rgba(5, 42, 69, 0.55),
+            rgba(3, 35, 58, 0.25)
+        );
+}
+
+
+/* =========================
+   LADO DIREITO
+========================= */
+
+.login-area {
+    width: 50%;
+    min-height: 100vh;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: flex-start;
+
+    padding-top: 210px;
+}
+
+
+/* =========================
+   CARD
+========================= */
+
+.login-card {
+    width: 458px;
+    max-width: calc(100% - 40px);
+
+    background-color: white;
+
+    padding: 42px;
+
+    border-radius: 12px;
+
+    box-shadow:
+        0 12px 30px rgba(0, 0, 0, 0.08);
+        
+}
+
+
+/* Título */
+
+.login-card h2 {
+    margin: 0 0 10px;
+
+    color: #0b4775;
+
+    font-size: 26px;
+
+    font-weight: 400;
+}
+
+
+/* Descrição */
+
+.login-description {
+    margin: 0 0 42px;
+
+    color: #50555d;
+
+    font-size: 15px;
+
+    line-height: 1.5;
+}
+
+
+/* =========================
+   FORMULÁRIO
+========================= */
+
+.form-label {
+    display: block;
+
+    margin-bottom: 8px;
+
+    color: #4d535b;
+
+    font-size: 13px;
+
+    font-weight: 700;
+
+    letter-spacing: 1px;
+}
+
+
+/* Container do input */
+
+.input-container {
+    position: relative;
+
+    width: 100%;
+}
+
+
+/* Input */
+
+.login-input {
+    width: 100% !important;
+
+    height: 56px;
+
+    padding: 0 50px 0 17px;
+
+    border: none !important;
+
+    border-radius: 10px;
+
+    background-color: #f3f3f3;
+
+    color: #444;
+
+    box-shadow:
+        0 3px 4px rgba(0, 0, 0, 0.15);
+}
+
+
+.login-input::placeholder {
+    color: #9aadc5;
+}
+
+
+.login-input:focus {
+    background-color: #f3f3f3;
+
+    box-shadow:
+        0 0 0 3px rgba(11, 77, 125, 0.15);
+}
+
+
+/* =========================
+   ÍCONES DOS INPUTS
+========================= */
+
+.input-icon {
+    position: absolute;
+
+    right: 16px;
+    top: 50%;
+
+    width: 21px;
+    height: 21px;
+
+    transform: translateY(-50%);
+
+    object-fit: contain;
+}
+
+
+/* =========================
+   SENHA
+========================= */
+
+.password-label {
+
+    margin-top: 15px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    margin-bottom: 8px;
+}
+
+
+.password-label .form-label {
+    margin-bottom: 0;
+}
+
+
+.forgot-password {
+    color: #064574;
+
+    font-size: 13px;
+
+    font-weight: 700;
+
+    text-decoration: none;
+
+    align-content: right;
+}
+
+
+.forgot-password:hover {
+    text-decoration: underline;
+}
+
+/* =========================
+   CHECKBOX
+========================= */
+
+.form-check {
+    display: flex;
+
+    align-items: center;
+
+    margin-top: 22px;
+}
+
+
+.form-check-input {
+    width: 17px;
+    height: 17px;
+
+    margin-top: 0;
+
+    cursor: pointer;
+}
+
+
+.form-check-label {
+    margin-left: 6px;
+
+    color: #50555c;
+
+    font-size: 15px;
+}
+
+
+/* =========================
+   BOTÃO
+========================= */
+
+.login-button {
+    display: flex !important;
+
+    align-items: center;
+
+    justify-content: center;
+
+    width: 100% !important;
+
+    height: 58px;
+
+    margin-top: 24px;
+
+    border: none;
+
+    border-radius: 10px;
+
+    background-color: #0d4f7d;
+
+    color: white;
+
+    font-size: 16px;
+
+    font-weight: 700;
+
+    box-shadow:
+        0 4px 5px rgba(0, 0, 0, 0.2);
+}
+
+
+.login-button:hover {
+    background-color: #093f64;
+
+    color: white;
+}
+
+
+.login-button span {
+    margin-left: 8px;
+
+    font-size: 22px;
+}
+
+
+/* =========================
+   SEPARADOR
+========================= */
+
+.login-card hr {
+    margin: 40px 0 32px;
+
+    border: 0;
+
+    border-top: 1px solid #e4e4e4;
+
+    opacity: 1;
+}
+
+
+/* =========================
+   CADASTRO
+========================= */
+
+.register-text {
+    margin: 0;
+
+    text-align: center;
+
+    color: #5b6067;
+
+    font-size: 14px;
+}
+
+
+.register-text a {
+    color: #064574;
+
+    font-weight: 700;
+
+    text-decoration: none;
+}
+
+.register-text a:hover{
+    text-decoration: underline;
+}
+
+
+/* =========================
+   FOOTER
+========================= */
+
+.login-footer {
+    display: flex;
+
+    gap: 30px;
+
+    margin: 32px;
+}
+
+
+.login-footer a {
+    color: #7b818a;
+
+    font-size: 13px;
+
+    text-decoration: none;
+}
+
+
+.login-footer a:hover {
+    text-decoration: underline;
+}
+
+
+/* =========================
+   RESPONSIVIDADE
+========================= */
+
+@media (max-width: 900px) {
+
+    .login-page {
+        flex-direction: column;
+    }
+
+    .login-brand {
+        width: 100%;
+        min-height: 350px;
+    }
+
+    .login-area {
+        width: 100%;
+
+        min-height: auto;
+
+        padding: 50px 20px;
+    }
+
+    .login-card {
+        width: 458px;
+    }
+}
+
+
+@media (max-width: 500px) {
+
+    .login-brand {
+        min-height: 280px;
+    }
+
+    .brand-content {
+        padding-top: 40px;
+    }
+
+    .brand-content h1 {
+        font-size: 23px;
+    }
+
+    .login-card {
+        padding: 30px 22px;
+    }
+
+    .login-footer {
+        gap: 15px;
+    }
+}
