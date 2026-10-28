@@ -12,6 +12,7 @@
     "swagger-ui-express": "^5.0.1"
   },
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "dev": "node --watch src/server.js"
   }
 }
