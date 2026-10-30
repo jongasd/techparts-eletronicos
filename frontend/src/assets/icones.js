@@ -10,8 +10,11 @@ import perfil from './pfp-icon.png';
 import notificacoes from './notification-icon.png';
 import configuracoes from './config-icon.png';
 import ajuda from './help-icon.png';
+import procura from './search-icon.png';
 
 import logo from './chip-icon.png';
+
+import sair from './exit.png';
 
 const icones = {
     dashboard,
@@ -24,7 +27,9 @@ const icones = {
     notificacoes,
     configuracoes,
     ajuda,
-    logo
+    logo,
+    procura,
+    sair
 };
 
 export default icones;

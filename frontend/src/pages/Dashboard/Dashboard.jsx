@@ -3,6 +3,8 @@ import { useState } from 'react';
 
 import icones from '../../assets/icones'
 
+import { useLocation, useNavigate } from 'react-router-dom'
+
 import {
     ResponsiveContainer,
     BarChart,
@@ -57,6 +59,14 @@ function Dashboard() {
     const dadosGrafico =
         periodo === 'Mensal' ? dadosMensais : dadosSemanais;
 
+    const location = useLocation();
+
+    const navigate = useNavigate()
+    
+    function irLogin(){
+        navigate('/')
+    }
+
     return (
         <div className={`dashboard-layout ${menuAberto ? '' : 'sidebar-recolhida'}`}>
 
@@ -70,6 +80,7 @@ function Dashboard() {
                     aria-label={menuAberto ? 'Recolher menu lateral' : 'Expandir menu lateral'}
                     title="Mostrar ou esconder menu"
                 >
+                    <img src={icones.logo} alt='' className='brand-logo'/>
 
                     {menuAberto && (
                         <span className="brand-text">
@@ -84,7 +95,7 @@ function Dashboard() {
                     <button
                         key={nome}
                         type="button"
-                        className={`sidebar-link ${nome === 'Dashboard' ? 'active' : ''}`}
+                        className={`sidebar-link ${location.pathname === '/dashboard' && nome === 'Dashboard' ? 'active' : ''}`}
                         title={nome}
                         onClick={() => {
                         if (nome !== 'Dashboard') {
@@ -107,8 +118,9 @@ function Dashboard() {
                     type="button"
                     className="logout-button"
                     title="Encerrar sessão"
-                    onClick={() => console.log('Encerrar sessão')}
+                    onClick={irLogin}
                 >
+                    <img src={icones.sair} alt='' className='sair'/>
                     {menuAberto && <span>ENCERRAR SESSÃO</span>}
                 </button>
             </aside>
@@ -121,6 +133,7 @@ function Dashboard() {
                     <div className="topbar-spacer" />
 
                     <label className="dashboard-search">
+                        <img src={icones.procura} alt='' className='search-icon'/>
                         <input
                             type="search"
                             placeholder="Buscar no sistema..."
@@ -129,11 +142,11 @@ function Dashboard() {
                     </label>
 
                     <button type="button" className="topbar-icon" aria-label="Notificações">
-                        
+                        <img src={icones.notificacoes} alt=''/>
                     </button>
 
                     <button type="button" className="topbar-icon" aria-label="Ajuda">
-                        
+                        <img src={icones.ajuda} alt=""/>
                     </button>
 
                     <div className="topbar-divider" />
@@ -144,9 +157,8 @@ function Dashboard() {
                         onClick={() => console.log('Abrir perfil')}
                     >
                         <span>PERFIL</span>
-                        <span className="profile-avatar">
+                        <img src={icones.perfil} alt='Foto de perfil' className='profile-avatar'/>
                             
-                        </span>
                     </button>
                 </header>
 

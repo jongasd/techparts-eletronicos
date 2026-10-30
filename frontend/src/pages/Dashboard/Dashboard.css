@@ -116,10 +116,6 @@
     white-space: nowrap;
 }
 
-.sidebar-link svg {
-    flex-shrink: 0;
-}
-
 .sidebar-link:hover {
     color: var(--azul-escuro);
     background: #e8eef5;
@@ -128,6 +124,10 @@
 .sidebar-link.active {
     color: #fff;
     background: #123858;
+}
+
+.sidebar-link.active .sidebar-icon {
+  filter: brightness(0) invert(1);
 }
 
 .logout-button {
@@ -240,15 +240,14 @@
 }
 
 .topbar-icon {
-    display: grid;
-    flex-shrink: 0;
-    width: 23px;
-    height: 30px;
-    padding: 0;
-    color: #fff;
-    background: transparent;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     border: none;
-    place-items: center;
+    background: transparent;
+    padding: 8px;
     cursor: pointer;
 }
 
@@ -280,15 +279,10 @@
     letter-spacing: 0.8px;
 }
 
-.profile-avatar {
-    display: grid;
-    width: 33px;
-    height: 33px;
-    color: #d5e2ef;
-    background: #355a72;
-    border: 2px solid #708b9b;
-    border-radius: 50%;
-    place-items: center;
+.topbar-icon img {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
 }
 
 /* ===== CONTEÚDO DO DASHBOARD ===== */
@@ -747,6 +741,7 @@
     .dashboard-sidebar {
         flex-basis: 54px;
         width: 54px;
+        height: 30px;
     }
 
     .dashboard-sidebar .brand-logo {
@@ -819,4 +814,36 @@
   height: 19px;
   object-fit: contain;
   flex-shrink: 0;
+  filter: brightness(0) saturate(100%)
+          invert(38%) sepia(12%) saturate(900%)
+          hue-rotate(177deg) brightness(88%);
+
+}
+
+.profile-avatar {
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.search-icon {
+    width: 15px;
+    height: 15px;
+    object-fit: cover;
+    cursor: pointer;
+}
+
+.sair {
+    width: 15px;
+    height: 15px;
+    object-fit: contain;
+    cursor: pointer;
+}
+
+.brand-logo {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    cursor: pointer;
 }
