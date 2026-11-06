@@ -2,10 +2,14 @@
 import { useMemo, useState } from 'react';
 import './Employee.css';
 
+import Header from '../../components/Header/Header';
+import Footer from '../../components/Footer/Footer';
+import Sidebar from '../../components/Sidebar/Sidebar';
+
 const funcionariosIniciais = [
     {
         id: 1,
-        nome: 'SOFIA MARCOLOMGO DOS SANTOS',
+        nome: 'SOFIA MARCOLONGO DOS SANTOS',
         departamento: 'Vendas',
         inicial: 'S',
         cor: '#f47700',
@@ -25,7 +29,7 @@ const funcionariosIniciais = [
         departamento: 'Administração',
         inicial: 'A',
         cor: '#a54b25',
-        foto: 'https://i.pravatar.cc/150?img=47'
+        foto: 'https://i.pravatar.cc/150?img=37'
     },
     {
         id: 4,
@@ -46,6 +50,9 @@ const departamentos = [
 ];
 
 function Employee() {
+     // Controla a abertura e o fechamento da Sidebar
+    const [menuAberto, setMenuAberto] = useState(true);
+
     const [funcionarios, setFuncionarios] = useState(
         funcionariosIniciais
     );
@@ -135,30 +142,13 @@ function Employee() {
         <div className="funcionarios-page">
 
             {/* BARRA SUPERIOR */}
-            <header className="topbar-funcionarios">
+            <Header />
 
-                <div className="topbar-pesquisa">
-                    <span>⌕</span>
-
-                    <input
-                        type="text"
-                        placeholder="Buscar no sistema..."
-                        value={pesquisa}
-                        onChange={(e) => setPesquisa(e.target.value)}
-                    />
-                </div>
-
-                <div className="topbar-acoes">
-                    <button title="Notificações">♧</button>
-                    <button title="Ajuda">?</button>
-
-                    <div className="perfil-usuario">
-                        <span>PERFIL</span>
-                        <div className="perfil-avatar">U</div>
-                    </div>
-                </div>
-
-            </header>
+                {/* MENU LATERAL */}
+                <Sidebar
+                    menuAberto={menuAberto}
+                    setMenuAberto={setMenuAberto}
+                />
 
             {/* CONTEÚDO PRINCIPAL */}
             <main className="funcionarios-conteudo">
@@ -268,17 +258,7 @@ function Employee() {
             </main>
 
             {/* RODAPÉ */}
-            <footer className="footer-funcionarios">
-
-                <span>© 2026 Corporate Precision Systems</span>
-
-                <div>
-                    <a href="#privacy">Privacy Policy</a>
-                    <a href="#terms">Terms of Service</a>
-                    <a href="#support">Contact Support</a>
-                </div>
-
-            </footer>
+               <Footer />
 
             {/* MODAL DE CADASTRO */}
             {modalAberto && (
