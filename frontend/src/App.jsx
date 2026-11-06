@@ -10,6 +10,7 @@ import Perfil from './pages/Perfil/Perfil';
 
 import Dashboard from './pages/Dashboard/Dashboard';
 import System from './pages/System/System';
+import Stock from './pages/Stock/Stock';
 
 import Layout from './components/Layout/Layout';
 
@@ -25,6 +26,7 @@ function App() {
         <Route element={<Layout />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/sistema" element={<System />} />
+          <Route path="/estoque" element={<Stock />} />
         </Route>
       </Routes>
     </BrowserRouter>

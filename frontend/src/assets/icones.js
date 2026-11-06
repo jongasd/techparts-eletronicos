@@ -1,3 +1,4 @@
+import usuario from './user.png'
 
 import dashboard from './dashboard-icon.png';
 import sistema from './config-icon.png';
@@ -20,8 +21,15 @@ import check from './checkmark-icon.png';
 import api from './api-conections-icon.png';
 import procurar_user from './search-users-icon.png';
 import desempenho from './system-icon.png';
+import atencao from './danger-icon.png';
+import filtro from './filter-icon.png';
+import dinheiro from './money-icon.png';
+import repor from './reload-icon.png';
+import visibilidade from './visibility-icon.png';
+import editar from './edit-icon.png';
 
 const icones = {
+    usuario,
     dashboard,
     sistema,
     produtos,
@@ -38,7 +46,13 @@ const icones = {
     check,
     api,
     procurar_user,
-    desempenho
+    desempenho,
+    atencao,
+    filtro,
+    dinheiro,
+    repor,
+    visibilidade,
+    editar
 };
 
 export default icones;
