@@ -2,10 +2,9 @@ import './Login.css'
 
 import { Link, useNavigate } from 'react-router-dom'
 
+import icones from '../../assets/icones' 
+
 import chipImage from '../../assets/chip.png'
-import chipIcon from '../../assets/chip-icon.png'
-import userIcon from '../../assets/user.png'
-import lockIcon from '../../assets/lock.png'
 
 function Login() {
     const navigate = useNavigate()
@@ -23,7 +22,7 @@ function Login() {
 
                     <div className="chip-icon">
                         <img
-                            src={chipIcon}
+                            src={icones.logo}
                             alt="Ícone de chip"
                         />
                     </div>
@@ -73,7 +72,7 @@ function Login() {
                             />
 
                             <img
-                                src={userIcon}
+                                src={icones.usuario}
                                 alt=""
                                 className="input-icon"
                             />
@@ -106,7 +105,7 @@ function Login() {
                             />
 
                             <img
-                                src={lockIcon}
+                                src={icones.visibilidade}
                                 alt=""
                                 className="input-icon"
                             />
