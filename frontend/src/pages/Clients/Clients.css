@@ -1,0 +1,723 @@
+
+/* =========================================
+   CONFIGURAÇÃO GERAL
+========================================= */
+
+.clients-layout {
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: #f2f3f5;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.clients-corpo {
+    display: flex;
+    flex: 1;
+    width: 100%;
+    min-width: 0;
+    min-height: 0;
+}
+
+.clients-page {
+    flex: 1;
+    width: 100%;
+    min-width: 0;
+    padding: 30px 40px;
+    box-sizing: border-box;
+    background: #f2f3f5;
+}
+
+/* =========================================
+   TÍTULO E CABEÇALHO
+========================================= */
+
+.clients-topo {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+    margin-bottom: 38px;
+}
+
+.clients-titulo h1 {
+    color: #063b60;
+    font-size: 34px;
+    font-weight: 800;
+    margin: 0;
+}
+
+.clients-linha-titulo {
+    width: 101px;
+    height: 5px;
+    background: #063b60;
+    margin-top: 5px;
+}
+
+.clients-botoes {
+    display: flex;
+    gap: 12px;
+}
+
+.clients-btn-filtrar,
+.clients-btn-novo {
+    height: 43px;
+    padding: 0 20px;
+    border: none;
+    border-radius: 9px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 3px 5px #00000035;
+}
+
+.clients-btn-filtrar {
+    background: #fff;
+    color: #222;
+    min-width: 133px;
+}
+
+.clients-btn-filtrar span {
+    margin-right: 7px;
+}
+
+.clients-btn-novo {
+    background: #003b60;
+    color: white;
+    min-width: 179px;
+}
+
+.clients-btn-novo span {
+    font-size: 20px;
+    margin-right: 5px;
+}
+
+.clients-btn-novo:hover {
+    background: #07517d;
+}
+
+/* =========================================
+   FILTRO
+========================================= */
+
+.clients-filtro {
+    display: none;
+    width: 100%;
+    max-width: 400px;
+    margin: -20px 0 25px auto;
+}
+
+.clients-filtro.visivel {
+    display: block;
+}
+
+.clients-filtro input {
+    width: 100%;
+    height: 42px;
+    padding: 0 12px;
+    box-sizing: border-box;
+    border: 1px solid #d5dce2;
+    border-radius: 8px;
+    outline: none;
+}
+
+/* =========================================
+   CONTEÚDO DA LISTAGEM
+========================================= */
+
+.clients-conteudo {
+    display: grid;
+    grid-template-columns: minmax(0, 2.1fr) minmax(280px, 1fr);
+    gap: 32px;
+    align-items: start;
+    width: 100%;
+}
+
+.clients-card-principal {
+    min-width: 0;
+    min-height: 490px;
+    background: white;
+    border-radius: 13px;
+    box-shadow: 0 4px 5px #00000035;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 30px;
+    box-sizing: border-box;
+}
+
+/* =========================================
+   ESTADO VAZIO
+========================================= */
+
+.clients-estado-vazio {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.clients-icone-vazio {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: #c4e5f5;
+    color: #003b60;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 25px;
+}
+
+.clients-estado-vazio h2 {
+    color: #003b60;
+    font-size: 24px;
+    font-weight: 700;
+    margin: 0 0 10px;
+}
+
+.clients-estado-vazio p {
+    max-width: 430px;
+    color: #515761;
+    font-size: 16px;
+    line-height: 1.5;
+    margin: 0;
+}
+
+/* =========================================
+   LISTA DE CLIENTES
+========================================= */
+
+.clients-lista {
+    width: 100%;
+    max-height: 430px;
+    overflow-y: auto;
+}
+
+.clients-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 17px 10px;
+    border-bottom: 1px solid #e4e7eb;
+}
+
+.clients-avatar {
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: #c4e5f5;
+    color: #003b60;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.clients-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.clients-info h3 {
+    font-size: 16px;
+    color: #063b60;
+    margin: 0 0 4px;
+    overflow-wrap: anywhere;
+}
+
+.clients-info p,
+.clients-info span {
+    font-size: 13px;
+    color: #626b76;
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+.clients-btn-excluir {
+    flex-shrink: 0;
+    background: transparent;
+    border: none;
+    color: #d00000;
+    font-size: 25px;
+    cursor: pointer;
+}
+
+/* =========================================
+   COLUNA LATERAL
+========================================= */
+
+.clients-lateral {
+    display: flex;
+    flex-direction: column;
+    gap: 34px;
+    min-width: 0;
+}
+
+/* =========================================
+   MÉTRICAS
+========================================= */
+
+.clients-card-metricas {
+    min-height: 255px;
+    padding: 32px 30px;
+    box-sizing: border-box;
+    background: white;
+    border-radius: 13px;
+    box-shadow: 0 4px 5px #00000035;
+}
+
+.clients-card-metricas h2 {
+    color: #063b60;
+    font-size: 15px;
+    font-weight: 400;
+    letter-spacing: 1.2px;
+    margin: 0 0 23px;
+}
+
+.clients-metrica {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 27px;
+}
+
+.clients-metrica span {
+    font-size: 16px;
+    color: #4d535e;
+}
+
+.clients-metrica strong {
+    font-size: 24px;
+    color: #080808;
+}
+
+.clients-metrica .clients-inadimplencia {
+    color: #d20e0e;
+}
+
+/* =========================================
+   INSIGHTS TECH
+========================================= */
+
+.clients-card-insights {
+    height: 200px;
+    position: relative;
+    overflow: hidden;
+    border-radius: 13px;
+
+    background:
+        linear-gradient(
+            0deg,
+            rgba(0, 52, 83, 0.96),
+            rgba(19, 58, 83, 0.35)
+        ),
+        linear-gradient(
+            135deg,
+            #9ba9b1,
+            #526b7c,
+            #233f55
+        );
+
+    box-shadow: 0 4px 5px #00000035;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 23px;
+    box-sizing: border-box;
+}
+
+.clients-grafico {
+    position: absolute;
+    top: 17px;
+    left: 35px;
+    max-width: calc(100% - 50px);
+}
+
+.clients-grafico svg {
+    max-width: 100%;
+    height: auto;
+}
+
+.clients-insights-texto {
+    position: relative;
+    z-index: 1;
+    color: white;
+}
+
+.clients-insights-texto span {
+    font-size: 14px;
+    letter-spacing: 1.5px;
+    color: #d9e4eb;
+}
+
+.clients-insights-texto p {
+    font-size: 15px;
+    line-height: 1.3;
+    margin: 3px 0 0;
+}
+
+/* =========================================
+   CADASTRO DE CLIENTE
+========================================= */
+
+.clients-cadastro {
+    width: 100%;
+}
+
+.clients-cadastro > .clients-titulo {
+    margin-bottom: 65px;
+}
+
+.clients-cadastro-conteudo {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 60px;
+    align-items: center;
+    max-width: 1100px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+/* =========================================
+   IMAGEM DE PERFIL
+========================================= */
+
+.clients-imagem-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+}
+
+.clients-avatar-grande {
+    width: 190px;
+    height: 190px;
+    position: relative;
+}
+
+.clients-avatar-grande svg {
+    width: 100%;
+    height: 100%;
+}
+
+.clients-icone-adicionar {
+    position: absolute;
+    right: -10px;
+    bottom: -8px;
+
+    width: 72px;
+    height: 72px;
+
+    border-radius: 50%;
+    background: #999999;
+    color: white;
+    border: 7px solid #f2f3f5;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    font-size: 55px;
+    font-weight: 300;
+    line-height: 1;
+    box-sizing: border-box;
+}
+
+.clients-imagem-area > span {
+    font-size: 13px;
+    color: #333;
+}
+
+/* =========================================
+   FORMULÁRIO
+========================================= */
+
+.clients-formulario-area {
+    width: 100%;
+    max-width: 430px;
+    min-width: 0;
+}
+
+.clients-formulario-area h2 {
+    color: #294d6a;
+    font-size: 19px;
+    font-weight: 400;
+    margin: 0 0 8px;
+}
+
+.clients-linha-formulario {
+    width: 33px;
+    height: 3px;
+    background: #003b60;
+    margin-bottom: 18px;
+}
+
+.clients-campo {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 25px;
+    flex: 1;
+    min-width: 0;
+}
+
+.clients-campo label {
+    color: #7a828c;
+    font-size: 9px;
+    letter-spacing: 1.2px;
+    margin-bottom: 7px;
+}
+
+.clients-campo input {
+    width: 100%;
+    height: 38px;
+    padding: 0 12px;
+    box-sizing: border-box;
+
+    border: none;
+    outline: none;
+    border-radius: 7px;
+
+    background: white;
+    color: #333;
+    font-size: 12px;
+}
+
+.clients-campo input::placeholder {
+    color: #818a98;
+}
+
+.clients-campos-duplos {
+    display: flex;
+    gap: 17px;
+}
+
+.clients-btn-adicionar {
+    width: 100%;
+    height: 40px;
+    margin-top: 2px;
+
+    background: linear-gradient(
+        90deg,
+        #003b60,
+        #205780
+    );
+
+    color: white;
+    border: none;
+    border-radius: 8px;
+
+    font-size: 12px;
+    cursor: pointer;
+
+    box-shadow: 0 3px 5px #00000035;
+}
+
+.clients-btn-adicionar:hover {
+    background: #07517d;
+}
+
+/* =========================================
+   TAGS RÁPIDAS
+========================================= */
+
+.clients-tags-area {
+    max-width: 900px;
+    min-height: 53px;
+
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 10px;
+
+    margin: 85px auto 0;
+    padding: 12px 18px;
+    box-sizing: border-box;
+
+    display: flex;
+    align-items: center;
+    gap: 25px;
+}
+
+.clients-tags-area > strong {
+    font-size: 9px;
+    letter-spacing: 1px;
+    color: #91a5b9;
+    white-space: nowrap;
+}
+
+.clients-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+}
+
+.clients-tag {
+    padding: 5px 12px;
+    border: none;
+    border-radius: 20px;
+
+    background: #b5d4e1;
+    color: #173b50;
+
+    font-size: 9px;
+    font-weight: bold;
+    cursor: pointer;
+
+    box-shadow: 0 2px 3px #00000025;
+}
+
+.clients-tag.selecionada {
+    background: #003b60;
+    color: white;
+}
+
+/* =========================================
+   BOTÃO VOLTAR
+========================================= */
+
+.clients-voltar {
+    display: block;
+    margin: 15px auto 0;
+
+    background: transparent;
+    border: none;
+
+    color: #45647d;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+/* =========================================
+   RESPONSIVIDADE - TABLETS
+========================================= */
+
+@media (max-width: 900px) {
+
+    .clients-page {
+        padding: 25px;
+    }
+
+    .clients-conteudo {
+        grid-template-columns: 1fr;
+    }
+
+    .clients-lateral {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 20px;
+    }
+
+    .clients-cadastro-conteudo {
+        gap: 30px;
+    }
+
+    .clients-card-principal {
+        min-height: 420px;
+    }
+
+}
+
+/* =========================================
+   RESPONSIVIDADE - CELULARES
+========================================= */
+
+@media (max-width: 650px) {
+
+    .clients-page {
+        padding: 25px 18px;
+    }
+
+    .clients-topo {
+        flex-direction: column;
+        gap: 22px;
+    }
+
+    .clients-titulo h1 {
+        font-size: 28px;
+    }
+
+    .clients-botoes {
+        width: 100%;
+    }
+
+    .clients-btn-filtrar,
+    .clients-btn-novo {
+        flex: 1;
+        min-width: 0;
+        padding: 0 8px;
+        font-size: 11px;
+    }
+
+    .clients-card-principal {
+        min-height: 380px;
+        padding: 20px;
+    }
+
+    .clients-lateral {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .clients-cadastro > .clients-titulo {
+        margin-bottom: 35px;
+    }
+
+    .clients-cadastro-conteudo {
+        grid-template-columns: 1fr;
+        gap: 35px;
+    }
+
+    .clients-formulario-area {
+        max-width: 100%;
+    }
+
+    .clients-tags-area {
+        margin-top: 40px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+}
+
+/* =========================================
+   RESPONSIVIDADE - CELULARES PEQUENOS
+========================================= */
+
+@media (max-width: 400px) {
+
+    .clients-page {
+        padding: 20px 12px;
+    }
+
+    .clients-campos-duplos {
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .clients-estado-vazio h2 {
+        font-size: 20px;
+    }
+
+    .clients-estado-vazio p {
+        font-size: 14px;
+    }
+
+    .clients-card-metricas {
+        padding: 25px 20px;
+    }
+
+    .clients-metrica span {
+        font-size: 14px;
+    }
+
+    .clients-metrica strong {
+        font-size: 21px;
+    }
+
+}

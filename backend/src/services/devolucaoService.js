@@ -1,238 +1,250 @@
-const pool = require("../config/database"); // mesmo import usado em saidaService
+const pool = require("../config/database");
 const Devolucao = require("../models/devolucao");
 const Produto = require("../models/produtos");
-const Saida = require("../models/saida");
 const Lote = require("../models/lote");
 const AppError = require("../utils/appError");
+const distribuirEntreLotes = require("../utils/distribuirEntreLotes");
 
-// ... CAMPOS_OBRIGATORIOS_CRIACAO, parseId, validarCamposObrigatorios,
-// validarItens permanecem exatamente como estão ...
+const CAMPOS_OBRIGATORIOS_CRIACAO = [
+  "id_saida",
+  "id_funcionario",
+  "data_devolucao",
+  "itens",
+];
 
-const comTransacao = async (fn) => {
-  const conn = await pool.getConnection();
-  try {
-    await conn.beginTransaction();
-    const resultado = await fn(conn);
-    await conn.commit();
-    return resultado;
-  } catch (err) {
-    await conn.rollback();
-    throw err;
-  } finally {
-    conn.release();
+const parseId = (id) => {
+  const parsed = Number(id);
+  if (!Number.isInteger(parsed) || parsed <= 0) {
+    throw new AppError("ID inválido", 400);
   }
+  return parsed;
 };
 
-/**
- * Devolve `quantidade` ao estoque: primeiro aos lotes de origem da saída
- * (do último consumido para o primeiro), e o que não for rastreável cai
- * no lote de ajuste/devolução do produto.
- */
-const devolverAosLotes = async (
-  conn,
-  { id_devolucao, id_saida, id_produto, quantidade },
-) => {
-  let restante = quantidade;
+const validarCamposObrigatorios = (dados) => {
+  const faltando = CAMPOS_OBRIGATORIOS_CRIACAO.filter(
+    (campo) =>
+      dados[campo] === undefined ||
+      dados[campo] === null ||
+      dados[campo] === "",
+  );
 
-  const vinculos = await Saida.findLotesDevolviveis(conn, id_saida, id_produto);
-  // ordenados por id DESC, com `disponivel` = quantidade - já devolvido, FOR UPDATE
-
-  for (const v of vinculos) {
-    if (restante <= 0) break;
-    const qtd = Math.min(restante, v.disponivel);
-    if (qtd <= 0) continue;
-
-    await Lote.incrementar(conn, v.id_lote, qtd);
-    await Devolucao.createLote(
-      {
-        id_devolucao,
-        id_produto,
-        id_lote: v.id_lote,
-        id_saida_lote: v.id,
-        quantidade: qtd,
-      },
-      conn,
-    );
-    restante -= qtd;
-  }
-
-  if (restante > 0) {
-    // venda anterior à migração de lotes (ou sem vínculo): lote explícito de ajuste
-    const idLoteAjuste = await Lote.obterOuCriarLoteDevolucao(conn, id_produto);
-    await Lote.incrementar(conn, idLoteAjuste, restante);
-    await Devolucao.createLote(
-      {
-        id_devolucao,
-        id_produto,
-        id_lote: idLoteAjuste,
-        id_saida_lote: null,
-        quantidade: restante,
-      },
-      conn,
-    );
-  }
-
-  await Produto.incrementarEstoque(conn, id_produto, quantidade);
-};
-
-const registrarItem = async (conn, { id_devolucao, id_saida, item }) => {
-  const id_produto = Number(item.id_produto);
-  const quantidade = Number(item.quantidade_devolvida);
-
-  const vendida = await Saida.quantidadeVendida(conn, id_saida, id_produto);
-  if (vendida === null) {
+  if (faltando.length > 0) {
     throw new AppError(
-      `Produto ${id_produto} não consta na saída ${id_saida}`,
+      `Campos obrigatórios ausentes: ${faltando.join(", ")}`,
+      400,
+    );
+  }
+};
+
+const validarItens = (itens) => {
+  if (!Array.isArray(itens) || itens.length === 0) {
+    throw new AppError(
+      "É necessário informar ao menos um item na devolução",
       400,
     );
   }
 
-  const jaDevolvida = await Devolucao.quantidadeJaDevolvida(
-    conn,
-    id_saida,
-    id_produto,
-  );
-  if (jaDevolvida + quantidade > vendida) {
-    throw new AppError(
-      `Produto ${id_produto}: devolução excede o vendido (vendido ${vendida}, já devolvido ${jaDevolvida}, solicitado ${quantidade})`,
-      400,
-    );
-  }
-
-  await Devolucao.createItem(
-    { id_devolucao, id_produto, quantidade_devolvida: quantidade },
-    conn,
-  );
-  await devolverAosLotes(conn, {
-    id_devolucao,
-    id_saida,
-    id_produto,
-    quantidade,
+  itens.forEach((item, index) => {
+    const qtdAusente =
+      item.quantidade_devolvida === undefined ||
+      item.quantidade_devolvida === null ||
+      item.quantidade_devolvida === "";
+    if (!item.id_produto || qtdAusente) {
+      throw new AppError(
+        `Item na posição ${index + 1} está incompleto. Campos obrigatórios: id_produto, quantidade_devolvida`,
+        400,
+      );
+    }
+    const qtd = Number(item.quantidade_devolvida);
+    if (!Number.isInteger(qtd) || qtd <= 0) {
+      throw new AppError(
+        `Item na posição ${index + 1} possui quantidade devolvida inválida`,
+        400,
+      );
+    }
   });
 };
 
-/** Desfaz exatamente o que a devolução colocou nos lotes e no estoque agregado. */
-const reverterEstoque = async (conn, id_devolucao) => {
-  const alocacoes = await Devolucao.findLotesByDevolucao(id_devolucao, conn);
-  const porProduto = new Map();
+const parseIdCampo = (campo, valor) => {
+  const parsed = Number(valor);
+  if (!Number.isInteger(parsed) || parsed <= 0) {
+    throw new AppError(`${campo} inválido`, 400);
+  }
+  return parsed;
+};
 
-  for (const a of alocacoes) {
-    const ok = await Lote.decrementar(conn, a.id_lote, a.quantidade); // false se saldo insuficiente
-    if (!ok) {
-      throw new AppError(
-        "Não é possível alterar/excluir esta devolução: parte do estoque devolvido já foi consumida",
-        409,
-      );
-    }
-    porProduto.set(
-      a.id_produto,
-      (porProduto.get(a.id_produto) || 0) + a.quantidade,
+// Soma itens repetidos do mesmo produto e ordena por id_produto. A soma faz o
+// teto de devolução valer para o total pedido; a ordem fixa evita deadlock
+// entre devoluções/vendas que tocam os mesmos produtos em ordens diferentes.
+const consolidarItens = (itens) => {
+  const mapa = new Map();
+  for (const item of itens) {
+    const idProduto = Number(item.id_produto);
+    mapa.set(
+      idProduto,
+      (mapa.get(idProduto) ?? 0) + Number(item.quantidade_devolvida),
     );
   }
-
-  for (const [id_produto, qtd] of porProduto) {
-    await Produto.decrementarEstoque(conn, id_produto, qtd);
-  }
-
-  await Devolucao.deleteLotesByDevolucao(id_devolucao, conn);
+  return [...mapa.entries()].sort((a, b) => a[0] - b[0]);
 };
+
+const linhasParaMapa = (linhas) =>
+  new Map(linhas.map((l) => [Number(l.id_produto), Number(l.total)]));
 
 const devolucaoService = {
   listarTodas: () => Devolucao.findAll(),
 
   buscarPorId: async (id) => {
-    /* inalterado */
+    const idValido = parseId(id);
+    const devolucao = await Devolucao.findById(idValido);
+
+    if (!devolucao) {
+      throw new AppError("Devolução não encontrada", 404);
+    }
+
+    const itens = await Devolucao.findItensByDevolucao(idValido);
+    return { ...devolucao, itens };
   },
 
   criar: async (body) => {
     validarCamposObrigatorios(body);
     validarItens(body.itens);
 
-    const dadosDevolucao = {
-      id_saida: Number(body.id_saida),
-      id_funcionario: Number(body.id_funcionario),
-      data_devolucao: String(body.data_devolucao),
-      motivo: body.motivo ? String(body.motivo).trim() : null,
-    };
+    const idSaida = parseIdCampo("id_saida", body.id_saida);
+    const idFuncionario = parseIdCampo("id_funcionario", body.id_funcionario);
+    const itens = consolidarItens(body.itens);
 
-    return comTransacao(async (conn) => {
-      const novoId = await Devolucao.create(dadosDevolucao, conn);
-      for (const item of body.itens) {
-        await registrarItem(conn, {
-          id_devolucao: novoId,
-          id_saida: dadosDevolucao.id_saida,
-          item,
-        });
+    const conn = await pool.getConnection();
+    try {
+      await conn.beginTransaction();
+
+      const saida = await Devolucao.travarSaida(idSaida, conn);
+      if (!saida) {
+        throw new AppError("Saída não encontrada", 404);
       }
+
+      const vendido = linhasParaMapa(
+        await Devolucao.somarVendidoPorProduto(idSaida, conn),
+      );
+      const devolvido = linhasParaMapa(
+        await Devolucao.somarDevolvidoPorProduto(idSaida, conn),
+      );
+
+      const novoId = await Devolucao.create(
+        {
+          id_saida: idSaida,
+          id_funcionario: idFuncionario,
+          data_devolucao: String(body.data_devolucao),
+          motivo: body.motivo ? String(body.motivo).trim() : null,
+        },
+        conn,
+      );
+
+      for (const [idProduto, quantidade] of itens) {
+        const totalVendido = vendido.get(idProduto);
+        if (!totalVendido) {
+          throw new AppError(
+            `Produto ${idProduto} não faz parte da saída ${idSaida}`,
+            400,
+          );
+        }
+
+        const jaDevolvido = devolvido.get(idProduto) ?? 0;
+        if (quantidade > totalVendido - jaDevolvido) {
+          throw new AppError(
+            `Quantidade devolvida do produto ${idProduto} excede o saldo devolvível (vendido: ${totalVendido}, já devolvido: ${jaDevolvido}, solicitado: ${quantidade})`,
+            409,
+          );
+        }
+
+        // Devolve aos mesmos lotes de onde a saída tirou (tbl_saida_lote).
+        const consumos = await Devolucao.listarConsumoDeLotes(
+          idSaida,
+          idProduto,
+          conn,
+        );
+        const { alocacoes, naoRastreado } = distribuirEntreLotes(
+          consumos,
+          jaDevolvido,
+          quantidade,
+        );
+        if (naoRastreado > 0) {
+          // Decisão explícita: não inventamos um lote. Estoque agregado e
+          // lotes divergiriam e a próxima venda do produto falharia.
+          throw new AppError(
+            `A saída ${idSaida} não tem lote registrado para o produto ${idProduto} (venda anterior ao controle de lotes). Registre a reposição por uma nova entrada.`,
+            409,
+          );
+        }
+
+        // Mesma ordem de travas da saída (produto, depois lotes).
+        await Produto.incrementarEstoque(idProduto, quantidade, conn);
+        for (const { id_lote, quantidade: qtdLote } of alocacoes) {
+          await Lote.devolverQuantidade(conn, id_lote, qtdLote);
+        }
+
+        await Devolucao.createItem(
+          {
+            id_devolucao: novoId,
+            id_produto: idProduto,
+            quantidade_devolvida: quantidade,
+          },
+          conn,
+        );
+      }
+
+      await conn.commit();
       return novoId;
-    });
+    } catch (erro) {
+      await conn.rollback();
+      throw erro;
+    } finally {
+      conn.release();
+    }
   },
 
   atualizar: async (id, body) => {
     const idValido = parseId(id);
 
+    const devolucao = await Devolucao.findById(idValido);
+    if (!devolucao) {
+      throw new AppError("Devolução não encontrada", 404);
+    }
+
+    // Trocar a saída ou os itens exigiria reverter o estoque e os lotes já
+    // repostos. Não está implementado: rejeita tudo sem gravar nada.
+    if (body.itens !== undefined || body.id_saida !== undefined) {
+      throw new AppError(
+        "Alterar itens ou saída de uma devolução não é suportado: o estoque e os lotes já foram repostos. Registre uma nova devolução.",
+        501,
+      );
+    }
+
     const dadosAtualizados = {};
-    if (body.id_saida !== undefined)
-      dadosAtualizados.id_saida = Number(body.id_saida);
     if (body.id_funcionario !== undefined)
-      dadosAtualizados.id_funcionario = Number(body.id_funcionario);
+      dadosAtualizados.id_funcionario = parseIdCampo(
+        "id_funcionario",
+        body.id_funcionario,
+      );
     if (body.data_devolucao !== undefined)
       dadosAtualizados.data_devolucao = String(body.data_devolucao);
     if (body.motivo !== undefined)
       dadosAtualizados.motivo = body.motivo ? String(body.motivo).trim() : null;
 
-    if (Object.keys(dadosAtualizados).length === 0 && !body.itens) {
+    if (Object.keys(dadosAtualizados).length === 0) {
       throw new AppError("Nenhum campo válido informado para atualização", 400);
     }
-    if (body.itens) validarItens(body.itens);
 
-    await comTransacao(async (conn) => {
-      const devolucao = await Devolucao.findById(idValido, conn);
-      if (!devolucao) throw new AppError("Devolução não encontrada", 404);
-
-      const idSaidaFinal = dadosAtualizados.id_saida ?? devolucao.id_saida;
-      const trocouSaida = idSaidaFinal !== devolucao.id_saida;
-
-      // Itens a (re)aplicar: os novos, ou os atuais se a saída mudou (os lotes de origem mudam junto)
-      let itensParaAplicar = body.itens ?? null;
-      if (!itensParaAplicar && trocouSaida) {
-        itensParaAplicar = await Devolucao.findItensByDevolucao(idValido, conn);
-      }
-
-      if (itensParaAplicar) {
-        await reverterEstoque(conn, idValido);
-        await Devolucao.deleteItensByDevolucao(idValido, conn);
-      }
-
-      if (Object.keys(dadosAtualizados).length > 0) {
-        await Devolucao.update(idValido, dadosAtualizados, conn);
-      }
-
-      if (itensParaAplicar) {
-        for (const item of itensParaAplicar) {
-          await registrarItem(conn, {
-            id_devolucao: idValido,
-            id_saida: idSaidaFinal,
-            item,
-          });
-        }
-      }
-    });
+    await Devolucao.update(idValido, dadosAtualizados);
   },
 
   excluir: async (id) => {
-    const idValido = parseId(id);
-
-    await comTransacao(async (conn) => {
-      const devolucao = await Devolucao.findById(idValido, conn);
-      if (!devolucao) throw new AppError("Devolução não encontrada", 404);
-
-      await reverterEstoque(conn, idValido);
-      await Devolucao.deleteItensByDevolucao(idValido, conn);
-      await Devolucao.delete(idValido, conn);
-    });
+    parseId(id);
+    throw new AppError(
+      "Exclusão de devolução não é suportada: ela não reverte o estoque nem os lotes já repostos.",
+      501,
+    );
   },
 };
 
 module.exports = devolucaoService;
-  

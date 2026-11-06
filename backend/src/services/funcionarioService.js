@@ -1,41 +1,14 @@
 const Funcionario = require("../models/funcionario");
 const AppError = require("../utils/appError");
+const {
+  parseId,
+  parseAtivo,
+  validarCamposObrigatorios,
+} = require("../utils/validadores");
 
 const CAMPOS_OBRIGATORIOS_CRIACAO = ["nome_funcionario"];
 
 const CAMPOS_ATUALIZAVEIS = ["nome_funcionario", "ativo"];
-
-const parseId = (id) => {
-  const parsed = Number(id);
-  if (!Number.isInteger(parsed) || parsed <= 0) {
-    throw new AppError("ID inválido", 400);
-  }
-  return parsed;
-};
-
-const parseAtivo = (valor) => {
-  const numero = Number(valor);
-  if (![0, 1].includes(numero)) {
-    throw new AppError('Campo "ativo" precisa ser 0 ou 1', 400);
-  }
-  return numero;
-};
-
-const validarCamposObrigatorios = (dados) => {
-  const faltando = CAMPOS_OBRIGATORIOS_CRIACAO.filter(
-    (campo) =>
-      dados[campo] === undefined ||
-      dados[campo] === null ||
-      dados[campo] === "",
-  );
-
-  if (faltando.length > 0) {
-    throw new AppError(
-      `Campos obrigatórios ausentes: ${faltando.join(", ")}`,
-      400,
-    );
-  }
-};
 
 const extrairCamposAtualizaveis = (body) => {
   return CAMPOS_ATUALIZAVEIS.reduce((acc, campo) => {
@@ -64,7 +37,7 @@ const funcionarioService = {
   },
 
   criar: async (body) => {
-    validarCamposObrigatorios(body);
+    validarCamposObrigatorios(body, CAMPOS_OBRIGATORIOS_CRIACAO);
 
     const dados = {
       nome_funcionario: String(body.nome_funcionario).trim(),
@@ -93,11 +66,17 @@ const funcionarioService = {
 
   excluir: async (id) => {
     const idValido = parseId(id);
-    const resultado = await Funcionario.delete(idValido);
+    const funcionario = await Funcionario.findById(idValido);
 
-    if (resultado.affectedRows === 0) {
+    if (!funcionario) {
       throw new AppError("Funcionário não encontrado", 404);
     }
+
+    if (funcionario.ativo === 0) {
+      throw new AppError("Funcionário já está inativo", 409);
+    }
+
+    await Funcionario.deactivate(idValido);
   },
 };
 

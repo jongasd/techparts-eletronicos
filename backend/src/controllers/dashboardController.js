@@ -47,18 +47,39 @@ exports.getProdutosPorCategoria = async (req, res, next) => {
 
 exports.getMovimentacoes7dias = async (req, res, next) => {
   try {
-    const [entradas] = await db.query(`
-      SELECT data_entrada AS data, COUNT(*) AS total
-      FROM tbl_entrada
-      WHERE data_entrada >= CURDATE() - INTERVAL 6 DAY
-      GROUP BY data_entrada
-    `);
-    const [saidas] = await db.query(`
-      SELECT data_saida AS data, COUNT(*) AS total
-      FROM tbl_saida
-      WHERE data_saida >= CURDATE() - INTERVAL 6 DAY
-      GROUP BY data_saida
-    `);
+    // Suporta ?dias=N  OU  ?de=YYYY-MM-DD&ate=YYYY-MM-DD
+    // Padrão: últimos 7 dias (mesmo comportamento anterior).
+    let condicaoEntrada, condicaoSaida;
+    let params = [];
+
+    if (req.query.de && req.query.ate) {
+      // Intervalo explícito
+      condicaoEntrada = "data_entrada BETWEEN ? AND ?";
+      condicaoSaida = "data_saida BETWEEN ? AND ?";
+      params = [req.query.de, req.query.ate];
+    } else {
+      // ?dias=N ou padrão 7
+      const dias = Math.max(1, Math.min(365, Number(req.query.dias) || 7));
+      condicaoEntrada = `data_entrada >= CURDATE() - INTERVAL ${dias - 1} DAY`;
+      condicaoSaida = `data_saida >= CURDATE() - INTERVAL ${dias - 1} DAY`;
+    }
+
+    const [entradas] = await db.query(
+      `SELECT data_entrada AS data, COUNT(*) AS total
+       FROM tbl_entrada
+       WHERE ${condicaoEntrada}
+       GROUP BY data_entrada`,
+      params,
+    );
+
+    const [saidas] = await db.query(
+      `SELECT data_saida AS data, COUNT(*) AS total
+       FROM tbl_saida
+       WHERE ${condicaoSaida}
+       GROUP BY data_saida`,
+      params,
+    );
+
     res.json({ entradas, saidas });
   } catch (err) {
     next(err);

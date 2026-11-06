@@ -15,4 +15,7 @@ router.post(
   authController.registrar,
 );
 
+// Qualquer funcionário autenticado pode trocar a própria senha.
+router.put("/senha", auth, authController.trocarSenha);
+
 module.exports = router;
