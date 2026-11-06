@@ -1,0 +1,272 @@
+
+/* ===== PÁGINA SISTEMA ===== */
+
+.system-page {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+    width: 100%;
+    min-width: 0;
+}
+
+/* ===== CABEÇALHO ===== */
+
+.system-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 8px;
+}
+
+.system-heading h1 {
+    margin: 0;
+    color: var(--azul-escuro);
+    font-size: 36px;
+    font-weight: 700;
+    letter-spacing: -1.5px;
+}
+
+.system-heading span {
+    padding: 6px 13px;
+    color: var(--azul-escuro);
+    font-size: 13px;
+    font-weight: 700;
+    background: #c7e6f5;
+    border-radius: 20px;
+}
+
+/* ===== DESEMPENHO E MANUTENÇÃO ===== */
+
+.system-overview {
+    display: grid;
+    grid-template-columns: minmax(0, 2.1fr) minmax(260px, 1fr);
+    gap: 24px;
+}
+
+.system-performance,
+.system-maintenance {
+    min-width: 0;
+    min-height: 345px;
+    padding: 28px;
+    border-radius: 12px;
+    box-shadow: 0 3px 4px #17324d30;
+}
+
+.system-performance {
+    background: #fff;
+}
+
+.system-performance h2 {
+    margin: 0;
+    color: #424954;
+    font-size: 19px;
+    font-weight: 600;
+}
+
+/* ===== MANUTENÇÃO ===== */
+
+.system-maintenance {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    color: #fff;
+    background: var(--azul-medio);
+}
+
+.system-maintenance h2 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 400;
+}
+
+.system-maintenance p {
+    margin: 0;
+    color: #a9c5e1;
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+.system-maintenance button {
+    min-height: 48px;
+    margin-top: auto;
+    color: var(--azul-escuro);
+    font-size: 14px;
+    font-weight: 700;
+    background: #f8fafc;
+    border: none;
+    border-radius: 9px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.system-maintenance button:hover {
+    background: #dceaf5;
+}
+
+/* ===== INDICADORES ===== */
+
+.system-metrics {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px;
+}
+
+.system-metric {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 18px;
+    min-width: 0;
+    min-height: 120px;
+    padding: 24px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 3px 4px #17324d30;
+}
+
+.system-metric span {
+    color: #a4afc1;
+    font-size: 13px;
+    letter-spacing: 0.7px;
+}
+
+.system-metric strong {
+    color: var(--azul-escuro);
+    font-size: 25px;
+    font-weight: 600;
+}
+
+/* ===== INTEGRAÇÕES ===== */
+
+.system-integrations {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    min-width: 0;
+    padding: 30px 34px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 3px 4px #17324d30;
+}
+
+.system-integrations h2 {
+    margin: 0 0 5px;
+    color: var(--azul-escuro);
+    font-size: 20px;
+    font-weight: 400;
+}
+
+.system-integrations p {
+    margin: 0;
+    color: #52647a;
+    font-size: 14px;
+}
+
+.system-integrations button {
+    flex-shrink: 0;
+    min-width: 135px;
+    padding: 11px 20px;
+    color: var(--azul-escuro);
+    font-size: 14px;
+    font-weight: 700;
+    background: #fff;
+    border: 2px solid var(--azul-escuro);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.system-integrations button:hover {
+    color: #fff;
+    background: var(--azul-escuro);
+}
+
+/* ===== RESPONSIVIDADE ===== */
+
+@media (max-width: 1050px) {
+    .system-overview {
+        grid-template-columns: 1fr;
+    }
+
+    .system-maintenance {
+        min-height: 240px;
+    }
+
+    .system-metrics {
+        gap: 16px;
+    }
+}
+
+@media (max-width: 700px) {
+    .system-page {
+        gap: 18px;
+    }
+
+    .system-heading h1 {
+        font-size: 29px;
+    }
+
+    .system-metrics {
+        grid-template-columns: 1fr;
+    }
+
+    .system-integrations {
+        align-items: stretch;
+        flex-direction: column;
+        padding: 22px;
+    }
+}
+
+@media (max-width: 450px) {
+    .system-performance,
+    .system-maintenance {
+        padding: 20px;
+    }
+
+    .system-integrations button {
+        width: 100%;
+    }
+}
+
+/* ===== ÍCONES ===== */
+
+.system-performance h2,
+.system-metric strong {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.system-performance h2 img {
+    width: 21px;
+    height: 21px;
+    object-fit: contain;
+}
+
+.system-metric strong {
+    justify-content: space-between;
+}
+
+.system-metric strong img {
+    width: 23px;
+    height: 23px;
+    object-fit: contain;
+}
+
+.system-api-icon {
+    display: grid;
+    flex-shrink: 0;
+    width: 64px;
+    height: 64px;
+    background: #e8eef5;
+    border-radius: 50%;
+    place-items: center;
+}
+
+.system-api-icon img {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+}
