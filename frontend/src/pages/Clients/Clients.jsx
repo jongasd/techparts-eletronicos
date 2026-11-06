@@ -1,15 +1,10 @@
 import { useState } from "react";
-
-import Header from "../../components/Header/Header";
-import Footer from "../../components/Footer/Footer";
-import Sidebar from "../../components/Sidebar/Sidebar";
-
 import "./Clients.css";
 
 function Clientes() {
-  // Controla a abertura e o fechamento da Sidebar
-  const [menuAberto, setMenuAberto] = useState(true);
 
+  const [filtroAberto, setFiltroAberto] = useState(false);
+  const [busca, setBusca] = useState("");
   // Controla qual tela será exibida
   const [tela, setTela] = useState("lista");
 
@@ -83,16 +78,7 @@ function Clientes() {
   }
 
   return (
-    <div className="clients-layout">
-      {/* CABEÇALHO SUPERIOR */}
-      <Header />
-
-      {/* CORPO DA PÁGINA */}
-      <div className={`clients-corpo ${menuAberto ? "" : "sidebar-recolhida"}`}>
-        <Sidebar menuAberto={menuAberto} setMenuAberto={setMenuAberto} />
-
-        {/* CONTEÚDO PRINCIPAL */}
-        <main className="clients-page">
+    <div className="clients-page">
           {tela === "lista" ? (
             <>
               {/* CABEÇALHO DA LISTAGEM */}
@@ -106,13 +92,9 @@ function Clientes() {
                   <button
                     type="button"
                     className="clients-btn-filtrar"
-                    onClick={() => {
-                      const campo = document.getElementById("filtro-cliente");
-
-                      campo.classList.toggle("visivel");
-                    }}
+                    onClick={() => setFiltroAberto(!filtroAberto)}
                   >
-                    <span>☰</span> FILTRAR
+                    FILTRAR
                   </button>
 
                   <button
@@ -178,7 +160,11 @@ function Clientes() {
                     </div>
                   ) : (
                     <div className="clients-lista">
-                      {clientes.map((cliente) => (
+                      {clientes
+                        .filter((cliente) =>
+                            cliente.nome.toLowerCase().includes(busca.toLowerCase())
+                        )
+                        .map((cliente) => (
                         <div className="clients-item" key={cliente.id}>
                           <div className="clients-avatar">
                             {cliente.nome.charAt(0).toUpperCase()}
@@ -421,11 +407,6 @@ function Clientes() {
               </button>
             </div>
           )}
-        </main>
-      </div>
-
-      {/* RODAPÉ */}
-      <Footer />
     </div>
   );
 }

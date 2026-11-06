@@ -29,10 +29,11 @@ function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/sistema" element={<System />} />
           <Route path="/estoque" element={<Stock />} />
-           <Route path='/clientes' element={<Clientes/>} />
+          <Route path='/clientes' element={<Clientes/>} />
         </Route>
       </Routes>
     </BrowserRouter>
   );
+}
 
 export default App;
