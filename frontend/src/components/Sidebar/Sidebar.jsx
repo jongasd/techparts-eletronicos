@@ -11,7 +11,7 @@ function Sidebar({ menuAberto, setMenuAberto }) {
     { nome: 'Dashboard', icone: icones.dashboard, rota: '/dashboard' },
     { nome: 'Sistema', icone: icones.sistema, rota: '/sistema' },
     { nome: 'Produtos', icone: icones.produtos },
-    { nome: 'Estoque', icone: icones.estoque },
+    { nome: 'Estoque', icone: icones.estoque, rota: '/estoque' },
     { nome: 'Funcionários', icone: icones.funcionarios },
     { nome: 'Clientes', icone: icones.clientes }
   ];
