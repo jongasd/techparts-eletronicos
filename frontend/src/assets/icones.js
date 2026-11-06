@@ -16,6 +16,11 @@ import logo from './chip-icon.png';
 
 import sair from './exit.png';
 
+import check from './checkmark-icon.png';
+import api from './api-conections-icon.png';
+import procurar_user from './search-users-icon.png';
+import desempenho from './system-icon.png';
+
 const icones = {
     dashboard,
     sistema,
@@ -29,9 +34,11 @@ const icones = {
     ajuda,
     logo,
     procura,
-    sair
+    sair,
+    check,
+    api,
+    procurar_user,
+    desempenho
 };
 
 export default icones;
-
-//testando
