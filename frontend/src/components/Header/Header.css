@@ -1,0 +1,131 @@
+
+/* ===== BARRA SUPERIOR ===== */
+
+.dashboard-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 15px;
+    min-height: 59px;
+    padding: 8px 28px;
+    color: #fff;
+    background: #123858;
+    box-shadow: 0 4px 12px #12385818;
+}
+
+.topbar-spacer {
+    flex: 1;
+}
+
+.dashboard-search {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: min(230px, 30%);
+    min-height: 30px;
+    padding: 0 11px;
+    color: #a9bed0;
+    background: #2a4c6a;
+    border-radius: 22px;
+}
+
+.dashboard-search input {
+    width: 100%;
+    min-width: 0;
+    padding: 5px 0;
+    color: #fff;
+    font-size: 12px;
+    background: transparent;
+    border: none;
+    outline: none;
+}
+
+.dashboard-search input::placeholder {
+    color: #a9bed0;
+}
+
+.topbar-icon {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: transparent;
+    padding: 8px;
+    cursor: pointer;
+}
+
+.topbar-icon:hover {
+    color: #b8d9f5;
+}
+
+.topbar-divider {
+    width: 1px;
+    height: 28px;
+    margin: 0 4px;
+    background: #ffffff30;
+}
+
+.topbar-profile {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0;
+    color: #fff;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+}
+
+.topbar-profile > span:first-child {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+}
+
+.topbar-icon img {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+}
+
+.profile-avatar {
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.search-icon {
+    width: 15px;
+    height: 15px;
+    object-fit: cover;
+    cursor: pointer;
+}
+
+/* ===== RESPONSIVIDADE ===== */
+
+@media (max-width: 700px) {
+    .dashboard-topbar {
+        gap: 10px;
+        padding: 8px 14px;
+    }
+
+    .dashboard-search {
+        width: auto;
+        flex: 1;
+    }
+
+    .topbar-divider {
+        margin: 0;
+    }
+
+    .topbar-profile {
+        gap: 6px;
+    }
+
+    .topbar-profile > span:first-child {
+        display: none;
+    }
+}

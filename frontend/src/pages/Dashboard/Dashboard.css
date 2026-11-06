@@ -1,0 +1,394 @@
+/* ===== CONTEÚDO DO DASHBOARD ===== */
+
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 20px;
+}
+
+.metric-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 9px;
+    min-width: 0;
+    min-height: 125px;
+    padding: 20px 22px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 3px 4px #17324d30;
+}
+
+.metric-label {
+    color: #71829b;
+    font-size: 10px;
+    letter-spacing: 0.6px;
+}
+
+.metric-value {
+    overflow-wrap: anywhere;
+    color: var(--azul-escuro);
+    font-size: clamp(20px, 2vw, 28px);
+    font-weight: 400;
+    letter-spacing: -0.7px;
+}
+
+.metric-positive,
+.metric-muted {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 10px;
+}
+
+.metric-positive {
+    color: #00a578;
+}
+
+.metric-muted {
+    color: #94a7c2;
+}
+
+/* ===== PAINÉIS ===== */
+
+.dashboard-panel {
+    min-width: 0;
+    padding: 28px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 3px 4px #17324d30;
+}
+
+.profit-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    min-height: 370px;
+}
+
+.panel-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.panel-heading h2,
+.dashboard-panel h2 {
+    margin: 0;
+    color: var(--azul-escuro);
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.period-selector {
+    display: flex;
+    flex-shrink: 0;
+    gap: 7px;
+}
+
+.period-selector button {
+    min-width: 72px;
+    padding: 7px 13px;
+    color: #52647a;
+    font-size: 11px;
+    background: #eceef1;
+    border: none;
+    border-radius: 9px;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.period-selector button:hover {
+    background: #dce4ed;
+}
+
+.period-selector button.selected {
+    color: #fff;
+    background: var(--azul-escuro);
+}
+
+.profit-chart {
+    flex: 1;
+    width: 100%;
+    min-height: 250px;
+}
+
+/* ===== PAINÉIS INFERIORES ===== */
+
+.bottom-panels {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 28px;
+}
+
+.team-panel,
+.clients-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.team-panel h2,
+.clients-panel h2 {
+    margin-bottom: 4px;
+    font-size: 15px;
+    font-weight: 400;
+}
+
+.team-stat {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    min-width: 0;
+    min-height: 59px;
+    padding: 10px 12px;
+    background: #f7f9fb;
+    border-radius: 10px;
+    box-shadow: 0 3px 4px #0003;
+}
+
+.stat-icon {
+    display: grid;
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    color: #8ea2bc;
+    background: #e3eaf3;
+    border-radius: 50%;
+    place-items: center;
+}
+
+.team-stat-text {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+}
+
+.team-stat-text strong {
+    overflow: hidden;
+    color: #25354a;
+    font-size: 12px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.team-stat-text span {
+    color: #7286a2;
+    font-size: 10px;
+}
+
+.stat-number {
+    color: var(--azul-escuro);
+    font-size: 16px;
+}
+
+.efficiency {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 3px;
+    padding-top: 19px;
+    border-top: 1px solid #edf0f4;
+}
+
+.section-caption {
+    color: #91a5c2;
+    font-size: 10px;
+    letter-spacing: 0.8px;
+}
+
+.progress-track,
+.volume-track {
+    overflow: hidden;
+    height: 7px;
+    background: #eef2f7;
+    border-radius: 8px;
+}
+
+.progress-value {
+    height: 100%;
+    background: var(--azul-escuro);
+}
+
+.progress-labels {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    color: #657b98;
+    font-size: 9px;
+    font-weight: 600;
+}
+
+/* ===== CLIENTES ===== */
+
+.client-metrics {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 13px;
+}
+
+.client-metric {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    min-width: 0;
+    padding: 16px;
+    background: #fff;
+    border: 1px solid #edf0f4;
+    border-radius: 12px;
+    box-shadow: 0 3px 4px #0002;
+}
+
+.client-metric span {
+    color: #91a5c2;
+    font-size: 9px;
+}
+
+.client-metric strong {
+    color: var(--azul-escuro);
+    font-size: 22px;
+    font-weight: 400;
+}
+
+.client-metric .churn-value {
+    color: #d92121;
+}
+
+.client-volume {
+    display: grid;
+    grid-template-columns: 29px minmax(0, 1fr) 34px;
+    align-items: center;
+    gap: 11px;
+}
+
+.client-initials {
+    display: grid;
+    width: 29px;
+    height: 29px;
+    color: #263648;
+    font-size: 9px;
+    font-weight: 700;
+    background: #eff3f7;
+    border-radius: 5px;
+    place-items: center;
+}
+
+.volume-track {
+    height: 7px;
+}
+
+.volume-track div {
+    height: 100%;
+    background: var(--azul-escuro);
+}
+
+.client-volume:nth-of-type(4) .volume-track div {
+    background: #3b6793;
+}
+
+.client-volume strong {
+    color: #252a30;
+    font-size: 10px;
+    text-align: right;
+}
+
+/* ===== TABLETS ===== */
+
+@media (max-width: 1050px) {
+    .metrics-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+    }
+
+    .bottom-panels {
+        gap: 20px;
+    }
+
+    .dashboard-panel {
+        padding: 22px;
+    }
+
+    .metric-card {
+        min-height: 115px;
+    }
+}
+
+/* ===== TELAS MENORES ===== */
+
+@media (max-width: 700px) {
+    .bottom-panels {
+        grid-template-columns: 1fr;
+        gap: 18px;
+    }
+
+    .profit-panel {
+        min-height: 340px;
+    }
+}
+
+/* ===== CELULARES ===== */
+
+@media (max-width: 450px) {
+    .metrics-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .metric-card {
+        min-height: 100px;
+        padding: 16px;
+    }
+
+    .metric-value {
+        font-size: 25px;
+    }
+
+    .dashboard-panel {
+        padding: 16px;
+    }
+
+    .panel-heading {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .period-selector {
+        width: 100%;
+    }
+
+    .period-selector button {
+        flex: 1;
+    }
+
+    .profit-chart {
+        min-height: 250px;
+    }
+
+    .client-metrics {
+        gap: 8px;
+    }
+
+    .client-metric {
+        padding: 12px 9px;
+    }
+
+    .client-volume {
+        gap: 7px;
+    }
+
+    .team-stat {
+        gap: 8px;
+        padding: 9px;
+    }
+
+    .team-stat-text strong {
+        font-size: 10px;
+    }
+
+    .team-stat-text span {
+        font-size: 9px;
+    }
+}
