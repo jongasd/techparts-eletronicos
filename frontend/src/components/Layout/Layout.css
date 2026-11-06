@@ -1,0 +1,72 @@
+
+/* ===== ESTRUTURA GERAL ===== */
+
+.dashboard-layout {
+    --azul-escuro: #06395c;
+    --azul-medio: #24547e;
+    --fundo: #f1f2f4;
+    --texto-secundario: #718096;
+
+    display: flex;
+    width: 100%;
+    min-height: 100vh;
+    color: #17324d;
+    background: var(--fundo);
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.dashboard-layout * {
+    box-sizing: border-box;
+}
+
+.dashboard-layout button,
+.dashboard-layout input {
+    font: inherit;
+}
+
+.dashboard-layout button {
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* ===== ÁREA PRINCIPAL ===== */
+
+.dashboard-content {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 100vh;
+}
+
+.dashboard-main {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 28px;
+    width: 100%;
+    padding: 28px;
+}
+
+/* ===== ACESSIBILIDADE ===== */
+
+.dashboard-layout button:focus-visible,
+.dashboard-layout a:focus-visible {
+    outline: 3px solid #6caef0;
+    outline-offset: 3px;
+}
+
+/* ===== RESPONSIVIDADE ===== */
+
+@media (max-width: 1050px) {
+    .dashboard-main {
+        gap: 22px;
+        padding: 22px;
+    }
+}
+
+@media (max-width: 700px) {
+    .dashboard-main {
+        gap: 18px;
+        padding: 16px;
+    }
+}
