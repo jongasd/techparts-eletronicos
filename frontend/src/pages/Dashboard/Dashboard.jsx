@@ -1,10 +1,6 @@
 
 import { useState } from 'react';
 
-import icones from '../../assets/icones'
-
-import { useLocation, useNavigate } from 'react-router-dom'
-
 import {
     ResponsiveContainer,
     BarChart,
@@ -16,8 +12,6 @@ import {
 } from 'recharts';
 
 import './Dashboard.css';
-
-import Sidebar from '../../components/Sidebar/Sidebar';
 
 // Dados demonstrativos. Depois serão substituídos pela API.
 const dadosSemanais = [
@@ -45,301 +39,212 @@ const dadosMensais = [
     { periodo: 'Dez', lucro: 25200 }
 ];
 
-const modulos = [
-    { nome: 'Dashboard', icone: icones.dashboard },
-    { nome: 'Sistema', icone: icones.sistema },
-    { nome: 'Produtos', icone: icones.produtos },
-    { nome: 'Estoque', icone: icones.estoque },
-    { nome: 'Funcionários', icone: icones.funcionarios },
-    { nome: 'Clientes', icone: icones.clientes }
-];
-
 function Dashboard() {
     const [periodo, setPeriodo] = useState('Semanal');
-    const [menuAberto, setMenuAberto] = useState(true);
 
     const dadosGrafico =
         periodo === 'Mensal' ? dadosMensais : dadosSemanais;
 
-    const location = useLocation();
-
-    const navigate = useNavigate()
-    
-    function irLogin(){
-        navigate('/')
-    }
-
     return (
-        <div className={`dashboard-layout ${menuAberto ? '' : 'sidebar-recolhida'}`}>
+        <>
+            {/* INDICADORES */}
+            <section className="metrics-grid" aria-label="Indicadores gerais">
 
-            {/* BARRA LATERAL */}
-            <Sidebar
-                menuAberto={menuAberto}
-                setMenuAberto={setMenuAberto}
-            />
+                <article className="metric-card">
+                    <span className="metric-label">CHECAR ESTOQUE</span>
+                    <strong className="metric-value">40 Dias</strong>
+                    <span className="metric-positive">
+                        12 dias restantes
+                    </span>
+                </article>
 
-            {/* ÁREA PRINCIPAL */}
-            <div className="dashboard-content">
+                <article className="metric-card">
+                    <span className="metric-label">MARGEM BRUTA</span>
+                    <strong className="metric-value">32%</strong>
+                    <span className="metric-positive">
+                        +4.2% este mês
+                    </span>
+                </article>
 
-                {/* BARRA SUPERIOR */}
-                <header className="dashboard-topbar">
-                    <div className="topbar-spacer" />
+                <article className="metric-card">
+                    <span className="metric-label">ATIVOS TOTAIS</span>
+                    <strong className="metric-value">R$ 1.2M</strong>
+                    <span className="metric-muted">Capacidade: 84%</span>
+                </article>
 
-                    <label className="dashboard-search">
-                        <img src={icones.procura} alt='' className='search-icon'/>
-                        <input
-                            type="search"
-                            placeholder="Buscar no sistema..."
-                            aria-label="Buscar no sistema"
-                        />
-                    </label>
+                <article className="metric-card">
+                    <span className="metric-label">VENDAS DO MÊS</span>
+                    <strong className="metric-value">R$85.400</strong>
+                    <span className="metric-positive">
+                        +8,5% em relação ao mês anterior
+                    </span>
+                </article>
 
-                    <button type="button" className="topbar-icon" aria-label="Notificações">
-                        <img src={icones.notificacoes} alt=''/>
-                    </button>
+            </section>
 
-                    <button type="button" className="topbar-icon" aria-label="Ajuda">
-                        <img src={icones.ajuda} alt=""/>
-                    </button>
+            {/* GRÁFICO */}
+            <section className="dashboard-panel profit-panel">
 
-                    <div className="topbar-divider" />
+                <div className="panel-heading">
+                    <h2>LUCRO {periodo.toUpperCase()}</h2>
 
-                    <button
-                        type="button"
-                        className="topbar-profile"
-                        onClick={() => console.log('Abrir perfil')}
-                    >
-                        <span>PERFIL</span>
-                        <img src={icones.perfil} alt='Foto de perfil' className='profile-avatar'/>
-                            
-                    </button>
-                </header>
+                    <div className="period-selector" aria-label="Período do gráfico">
+                        <button
+                            type="button"
+                            className={periodo === 'Mensal' ? 'selected' : ''}
+                            aria-pressed={periodo === 'Mensal'}
+                            onClick={() => setPeriodo('Mensal')}
+                        >
+                            Mensal
+                        </button>
 
-                {/* CONTEÚDO */}
-                <main className="dashboard-main">
+                        <button
+                            type="button"
+                            className={periodo === 'Semanal' ? 'selected' : ''}
+                            aria-pressed={periodo === 'Semanal'}
+                            onClick={() => setPeriodo('Semanal')}
+                        >
+                            Semanal
+                        </button>
+                    </div>
+                </div>
 
-                    {/* INDICADORES */}
-                    <section className="metrics-grid" aria-label="Indicadores gerais">
+                <div className="profit-chart">
+                    <ResponsiveContainer width="100%" height="100%">
+                        <BarChart
+                            data={dadosGrafico}
+                            margin={{ top: 12, right: 12, left: 0, bottom: 0 }}
+                        >
+                            <CartesianGrid vertical={false} stroke="#e2e6eb" />
 
-                        <article className="metric-card">
-                            <span className="metric-label">CHECAR ESTOQUE</span>
-                            <strong className="metric-value">40 Dias</strong>
-                            <span className="metric-positive">
-                                
-                                12 dias restantes
-                            </span>
-                        </article>
+                            <XAxis
+                                dataKey="periodo"
+                                axisLine={false}
+                                tickLine={false}
+                                tick={{ fill: '#929aa5', fontSize: 12 }}
+                                dy={8}
+                            />
 
-                        <article className="metric-card">
-                            <span className="metric-label">MARGEM BRUTA</span>
-                            <strong className="metric-value">32%</strong>
-                            <span className="metric-positive">
-                                
-                                +4.2% este mês
-                            </span>
-                        </article>
+                            <YAxis
+                                domain={[0, 30000]}
+                                ticks={[0, 5000, 10000, 15000, 20000, 25000, 30000]}
+                                axisLine={false}
+                                tickLine={false}
+                                tick={{ fill: '#929aa5', fontSize: 11 }}
+                                tickFormatter={(valor) =>
+                                    valor.toLocaleString('pt-BR')
+                                }
+                                width={48}
+                            />
 
-                        <article className="metric-card">
-                            <span className="metric-label">ATIVOS TOTAIS</span>
-                            <strong className="metric-value">R$ 1.2M</strong>
-                            <span className="metric-muted">Capacidade: 84%</span>
-                        </article>
+                            <Tooltip
+                                formatter={(valor) => [
+                                    `R$ ${Number(valor).toLocaleString('pt-BR')}`,
+                                    'Lucro'
+                                ]}
+                                labelFormatter={(label) => `Período: ${label}`}
+                            />
 
-                        <article className="metric-card">
-                            <span className="metric-label">VENDAS DO MÊS</span>
-                            <strong className="metric-value">R$85.400</strong>
-                            <span className="metric-positive">
-                                
-                                +8,5% em relação ao mês anterior
-                            </span>
-                        </article>
+                            <Bar
+                                dataKey="lucro"
+                                fill="#06395c"
+                                radius={[7, 7, 0, 0]}
+                                maxBarSize={40}
+                                animationDuration={350}
+                            />
+                        </BarChart>
+                    </ResponsiveContainer>
+                </div>
+            </section>
 
-                    </section>
+            {/* PAINÉIS INFERIORES */}
+            <section className="bottom-panels">
 
-                    {/* GRÁFICO */}
-                    <section className="dashboard-panel profit-panel">
+                <article className="dashboard-panel team-panel">
+                    <h2>Equipe &amp; Funcionários</h2>
 
-                        <div className="panel-heading">
-                            <h2>LUCRO {periodo.toUpperCase()}</h2>
+                    <div className="team-stat">
+                        <span className="stat-icon"></span>
 
-                            <div className="period-selector" aria-label="Período do gráfico">
-                                <button
-                                    type="button"
-                                    className={periodo === 'Mensal' ? 'selected' : ''}
-                                    aria-pressed={periodo === 'Mensal'}
-                                    onClick={() => setPeriodo('Mensal')}
-                                >
-                                    Mensal
-                                </button>
-
-                                <button
-                                    type="button"
-                                    className={periodo === 'Semanal' ? 'selected' : ''}
-                                    aria-pressed={periodo === 'Semanal'}
-                                    onClick={() => setPeriodo('Semanal')}
-                                >
-                                    Semanal
-                                </button>
-                            </div>
+                        <div className="team-stat-text">
+                            <strong>Total de Ativos</strong>
+                            <span>Funcionários em campo</span>
                         </div>
 
-                        <div className="profit-chart">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <BarChart
-                                    data={dadosGrafico}
-                                    margin={{ top: 12, right: 12, left: 0, bottom: 0 }}
-                                >
-                                    <CartesianGrid
-                                        vertical={false}
-                                        stroke="#e2e6eb"
-                                    />
+                        <strong className="stat-number">142</strong>
+                    </div>
 
-                                    <XAxis
-                                        dataKey="periodo"
-                                        axisLine={false}
-                                        tickLine={false}
-                                        tick={{ fill: '#929aa5', fontSize: 12 }}
-                                        dy={8}
-                                    />
+                    <div className="team-stat">
+                        <span className="stat-icon"></span>
 
-                                    <YAxis
-                                        domain={[0, 30000]}
-                                        ticks={[0, 5000, 10000, 15000, 20000, 25000, 30000]}
-                                        axisLine={false}
-                                        tickLine={false}
-                                        tick={{ fill: '#929aa5', fontSize: 11 }}
-                                        tickFormatter={(valor) =>
-                                            valor.toLocaleString('pt-BR')
-                                        }
-                                        width={48}
-                                    />
-
-                                    <Tooltip
-                                        formatter={(valor) => [
-                                            `R$ ${Number(valor).toLocaleString('pt-BR')}`,
-                                            'Lucro'
-                                        ]}
-                                        labelFormatter={(label) => `Período: ${label}`}
-                                    />
-
-                                    <Bar
-                                        dataKey="lucro"
-                                        fill="#06395c"
-                                        radius={[7, 7, 0, 0]}
-                                        maxBarSize={40}
-                                        animationDuration={350}
-                                    />
-                                </BarChart>
-                            </ResponsiveContainer>
+                        <div className="team-stat-text">
+                            <strong>Equipes de Manutenção</strong>
+                            <span>Técnicos especializados</span>
                         </div>
-                    </section>
 
-                    {/* PAINÉIS INFERIORES */}
-                    <section className="bottom-panels">
+                        <strong className="stat-number">08</strong>
+                    </div>
 
-                        <article className="dashboard-panel team-panel">
-                            <h2>Equipe &amp; Funcionários</h2>
+                    <div className="efficiency">
+                        <span className="section-caption">EFICIÊNCIA DA EQUIPE</span>
 
-                            <div className="team-stat">
-                                <span className="stat-icon">
-                                    
-                                </span>
+                        <div className="progress-track">
+                            <div className="progress-value" style={{ width: '92%' }} />
+                        </div>
 
-                                <div className="team-stat-text">
-                                    <strong>Total de Ativos</strong>
-                                    <span>Funcionários em campo</span>
-                                </div>
+                        <div className="progress-labels">
+                            <span>Performance: 92%</span>
+                            <span>Meta: 85%</span>
+                        </div>
+                    </div>
+                </article>
 
-                                <strong className="stat-number">142</strong>
-                            </div>
+                <article className="dashboard-panel clients-panel">
+                    <h2>Visão Geral de Clientes</h2>
 
-                            <div className="team-stat">
-                                <span className="stat-icon">
-                                    
-                                </span>
+                    <div className="client-metrics">
+                        <div className="client-metric">
+                            <span>NOVOS (30 DIAS)</span>
+                            <strong>+24</strong>
+                        </div>
 
-                                <div className="team-stat-text">
-                                    <strong>Equipes de Manutenção</strong>
-                                    <span>Técnicos especializados</span>
-                                </div>
+                        <div className="client-metric">
+                            <span>CHURN RATE</span>
+                            <strong className="churn-value">1.2%</strong>
+                        </div>
+                    </div>
 
-                                <strong className="stat-number">08</strong>
-                            </div>
+                    <span className="section-caption">
+                        PRINCIPAIS CLIENTES POR VOLUME
+                    </span>
 
-                            <div className="efficiency">
-                                <span className="section-caption">EFICIÊNCIA DA EQUIPE</span>
+                    <div className="client-volume">
+                        <span className="client-initials">IN</span>
+                        <div className="volume-track">
+                            <div style={{ width: '80%' }} />
+                        </div>
+                        <strong>80%</strong>
+                    </div>
 
-                                <div className="progress-track">
-                                    <div className="progress-value" style={{ width: '92%' }} />
-                                </div>
+                    <div className="client-volume">
+                        <span className="client-initials">ME</span>
+                        <div className="volume-track">
+                            <div style={{ width: '65%' }} />
+                        </div>
+                        <strong>65%</strong>
+                    </div>
 
-                                <div className="progress-labels">
-                                    <span>Performance: 92%</span>
-                                    <span>Meta: 85%</span>
-                                </div>
-                            </div>
-                        </article>
+                    <div className="client-volume">
+                        <span className="client-initials">TC</span>
+                        <div className="volume-track">
+                            <div style={{ width: '40%' }} />
+                        </div>
+                        <strong>40%</strong>
+                    </div>
+                </article>
 
-                        <article className="dashboard-panel clients-panel">
-                            <h2>Visão Geral de Clientes</h2>
-
-                            <div className="client-metrics">
-                                <div className="client-metric">
-                                    <span>NOVOS (30 DIAS)</span>
-                                    <strong>+24</strong>
-                                </div>
-
-                                <div className="client-metric">
-                                    <span>CHURN RATE</span>
-                                    <strong className="churn-value">1.2%</strong>
-                                </div>
-                            </div>
-
-                            <span className="section-caption">
-                                PRINCIPAIS CLIENTES POR VOLUME
-                            </span>
-
-                            <div className="client-volume">
-                                <span className="client-initials">IN</span>
-                                <div className="volume-track">
-                                    <div style={{ width: '80%' }} />
-                                </div>
-                                <strong>80%</strong>
-                            </div>
-
-                            <div className="client-volume">
-                                <span className="client-initials">ME</span>
-                                <div className="volume-track">
-                                    <div style={{ width: '65%' }} />
-                                </div>
-                                <strong>65%</strong>
-                            </div>
-
-                            <div className="client-volume">
-                                <span className="client-initials">TC</span>
-                                <div className="volume-track">
-                                    <div style={{ width: '40%' }} />
-                                </div>
-                                <strong>40%</strong>
-                            </div>
-                        </article>
-
-                    </section>
-                </main>
-
-                {/* RODAPÉ */}
-                <footer className="dashboard-footer">
-                    <span>© 2026 Corporate Precision Systems</span>
-
-                    <nav aria-label="Links institucionais">
-                        <a href="#privacidade">Privacy Policy</a>
-                        <a href="#termos">Terms of Service</a>
-                        <a href="#suporte">Contact Support</a>
-                    </nav>
-                </footer>
-
-            </div>
-        </div>
+            </section>
+        </>
     );
 }
 

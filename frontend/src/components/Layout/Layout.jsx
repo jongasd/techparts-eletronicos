@@ -1,13 +1,37 @@
+
+import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 
-function Layout() {
-  return (
-    <div>
-      <h1>Layout funcionando!</h1>
+import Sidebar from '../Sidebar/Sidebar';
+import Header from '../Header/Header';
+import Footer from '../Footer/Footer';
 
-      <Outlet />
-    </div>
-  );
+import './Layout.css';
+
+function Layout() {
+    const [menuAberto, setMenuAberto] = useState(true);
+
+    return (
+        <div className={`dashboard-layout ${menuAberto ? '' : 'sidebar-recolhida'}`}>
+
+            <Sidebar
+                menuAberto={menuAberto}
+                setMenuAberto={setMenuAberto}
+            />
+
+            <div className="dashboard-content">
+
+                <Header />
+
+                <main className="dashboard-main">
+                    <Outlet />
+                </main>
+
+                <Footer />
+
+            </div>
+        </div>
+    );
 }
 
 export default Layout;
