@@ -17,6 +17,8 @@ import {
 
 import './Dashboard.css';
 
+import Sidebar from '../../components/Sidebar/Sidebar';
+
 // Dados demonstrativos. Depois serão substituídos pela API.
 const dadosSemanais = [
     { periodo: 'Seg', lucro: 12000 },
@@ -71,59 +73,10 @@ function Dashboard() {
         <div className={`dashboard-layout ${menuAberto ? '' : 'sidebar-recolhida'}`}>
 
             {/* BARRA LATERAL */}
-            <aside className="dashboard-sidebar">
-
-                <button
-                    type="button"
-                    className="sidebar-brand"
-                    onClick={() => setMenuAberto(!menuAberto)}
-                    aria-label={menuAberto ? 'Recolher menu lateral' : 'Expandir menu lateral'}
-                    title="Mostrar ou esconder menu"
-                >
-                    <img src={icones.logo} alt='' className='brand-logo'/>
-
-                    {menuAberto && (
-                        <span className="brand-text">
-                            <strong>TECHPARTS</strong>
-                            <small>ELETRÔNICOS</small>
-                        </span>
-                    )}
-                </button>
-
-                <nav className="sidebar-navigation" aria-label="Menu principal">
-                    {modulos.map(({ nome, icone }) => (
-                    <button
-                        key={nome}
-                        type="button"
-                        className={`sidebar-link ${location.pathname === '/dashboard' && nome === 'Dashboard' ? 'active' : ''}`}
-                        title={nome}
-                        onClick={() => {
-                        if (nome !== 'Dashboard') {
-                            console.log(`Abrir módulo: ${nome}`);
-                        }
-                        }}
-                    >
-                        <img
-                        src={icone}
-                        alt=""
-                        className="sidebar-icon"
-                        />
-
-                        {menuAberto && <span>{nome}</span>}
-                    </button>
-                    ))}
-                </nav>
-
-                <button
-                    type="button"
-                    className="logout-button"
-                    title="Encerrar sessão"
-                    onClick={irLogin}
-                >
-                    <img src={icones.sair} alt='' className='sair'/>
-                    {menuAberto && <span>ENCERRAR SESSÃO</span>}
-                </button>
-            </aside>
+            <Sidebar
+                menuAberto={menuAberto}
+                setMenuAberto={setMenuAberto}
+            />
 
             {/* ÁREA PRINCIPAL */}
             <div className="dashboard-content">
