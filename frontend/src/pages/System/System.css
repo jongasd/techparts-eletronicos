@@ -270,3 +270,10 @@
     height: 32px;
     object-fit: contain;
 }
+
+.system-integrations-content {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    min-width: 0;
+}
