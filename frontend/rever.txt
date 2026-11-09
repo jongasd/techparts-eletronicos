@@ -57,7 +57,7 @@ Estoque - implementar função no "Filtros", habilitar pesquisa, implementar fun
 
 footer - centralizar textos quando a tela for pequena
 
-
+teste: reenviando o arquivo pois as linhas acima não estão no github
 
 
 
