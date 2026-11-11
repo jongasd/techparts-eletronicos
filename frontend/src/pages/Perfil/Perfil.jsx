@@ -5,7 +5,6 @@ import { useNavigate } from 'react-router-dom';
 
 import perfilIcon from '../../assets/pfp-icon.png';
 import notificacoesIcon from '../../assets/notification-icon.png';
-import configuracoesIcon from '../../assets/config-icon.png';
 import ajudaIcon from '../../assets/help-icon.png';
 
 function Perfil() {
@@ -82,10 +81,6 @@ function Perfil() {
                 <nav className="perfil-header-actions">
                     <button type="button" aria-label="Notificações">
                         <img src={notificacoesIcon} alt="" />
-                    </button>
-
-                    <button type="button" aria-label="Configurações">
-                        <img src={configuracoesIcon} alt="" />
                     </button>
 
                     <button type="button" aria-label="Ajuda">

@@ -25,7 +25,7 @@ import atencao from './danger-icon.png';
 import filtro from './filter-icon.png';
 import dinheiro from './money-icon.png';
 import repor from './reload-icon.png';
-import visibilidade from './visibility-icon.png';
+import excluir from './trash-icon.png';
 import editar from './edit-icon.png';
 
 const icones = {
@@ -51,7 +51,7 @@ const icones = {
     filtro,
     dinheiro,
     repor,
-    visibilidade,
+    excluir,
     editar
 };
 

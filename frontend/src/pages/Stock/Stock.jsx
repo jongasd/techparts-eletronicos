@@ -108,7 +108,7 @@ function Stock() {
 
                                 <td>
                                     <div className="stock-actions">
-                                        <img src={icones.visibilidade} alt="Visualizar produto" />
+                                        <img src={icones.excluir} alt="Excluir produto" className='stock-delete-icon'/>
                                         <img src={icones.editar} alt="Editar produto" />
                                     </div>
                                 </td>
