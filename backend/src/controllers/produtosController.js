@@ -1,4 +1,9 @@
 const produtoService = require("../services/produtoService");
+const { urlImagem } = require("../utils/imagem");
+
+// A coluna guarda só o nome do arquivo; a URL pública é montada aqui.
+const comUrlImagem = (produto) =>
+  produto ? { ...produto, imagem_url: urlImagem(produto.imagem) } : produto;
 
 const produtoController = {
   listarTodas: async (req, res, next) => {
@@ -14,14 +19,18 @@ const produtoController = {
       if (resultado && typeof resultado === "object" && !Array.isArray(resultado)) {
         res.json({
           sucesso: true,
-          dados: resultado.registros,
+          dados: resultado.registros.map(comUrlImagem),
           total: resultado.total,
           pagina: resultado.pagina,
           limite: resultado.limite,
           totalPaginas: resultado.totalPaginas,
         });
       } else {
-        res.json({ sucesso: true, dados: resultado, total: resultado.length });
+        res.json({
+          sucesso: true,
+          dados: resultado.map(comUrlImagem),
+          total: resultado.length,
+        });
       }
     } catch (erro) {
       next(erro);
@@ -31,7 +40,7 @@ const produtoController = {
   buscarPorId: async (req, res, next) => {
     try {
       const produto = await produtoService.buscarPorId(req.params.id);
-      res.json({ sucesso: true, dados: produto });
+      res.json({ sucesso: true, dados: comUrlImagem(produto) });
     } catch (erro) {
       next(erro);
     }
@@ -39,7 +48,7 @@ const produtoController = {
 
   criar: async (req, res, next) => {
     try {
-      const novoId = await produtoService.criar(req.body);
+      const novoId = await produtoService.criar(req.body ?? {}, req.file);
       res.status(201).json({
         sucesso: true,
         mensagem: "Produto criado com sucesso",
@@ -52,8 +61,21 @@ const produtoController = {
 
   atualizar: async (req, res, next) => {
     try {
-      await produtoService.atualizar(req.params.id, req.body);
+      await produtoService.atualizar(
+        req.params.id,
+        req.body ?? {},
+        req.file,
+      );
       res.json({ sucesso: true, mensagem: "Produto atualizado com sucesso" });
+    } catch (erro) {
+      next(erro);
+    }
+  },
+
+  removerImagem: async (req, res, next) => {
+    try {
+      await produtoService.removerImagem(req.params.id);
+      res.json({ sucesso: true, mensagem: "Imagem removida com sucesso" });
     } catch (erro) {
       next(erro);
     }

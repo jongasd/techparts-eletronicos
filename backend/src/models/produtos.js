@@ -6,7 +6,7 @@ const executarQuery = async (sql, valores = [], conn = pool) => {
 };
 
 const CAMPOS_PUBLICOS =
-  "id_produto, id_categoria, nome_produto, quantidade_estoque, quantidade_minima, localizacao, preco, ativo, criado_em, atualizado_em";
+  "id_produto, id_categoria, nome_produto, quantidade_estoque, quantidade_minima, localizacao, preco, imagem, ativo, criado_em, atualizado_em";
 
 const Produto = {
   // Lista só ativos com suporte a paginação e filtros opcionais (Issue #13)

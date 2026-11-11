@@ -1,6 +1,7 @@
 const express = require("express");
 const rateLimit = require("express-rate-limit");
 const cors = require("cors");
+const { DIR_PRODUTOS, ROTA_PUBLICA_PRODUTOS } = require("./config/upload");
 
 const app = express();
 
@@ -51,6 +52,22 @@ app.use(
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
+
+// Imagens de produtos: públicas de propósito (<img src> não envia o header
+// Authorization). Os nomes são UUIDs aleatórios, então não dá para adivinhar URLs.
+app.use(
+  ROTA_PUBLICA_PRODUTOS,
+  express.static(DIR_PRODUTOS, {
+    index: false,
+    dotfiles: "ignore",
+    maxAge: "30d",
+    immutable: true, // arquivo nunca é alterado: troca de imagem gera nome novo
+    setHeaders: (res) => {
+      res.set("X-Content-Type-Options", "nosniff");
+      res.set("Cross-Origin-Resource-Policy", "cross-origin");
+    },
+  }),
+);
 
 // Healthcheck público — deve ficar antes de qualquer auth middleware
 // para que ferramentas de monitoramento não precisem de credenciais.
