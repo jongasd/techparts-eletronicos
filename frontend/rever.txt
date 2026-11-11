@@ -56,7 +56,7 @@ Sistema - ver o que o botão "configurar" deveria mostrar e implementar função
 Estoque - implementar função no "Filtros", habilitar pesquisa, implementar função de visibilidade, diminuir o campo de pesquisa para "Filtros" ficarem do lado quando a tela for menor e implementar função de editar
 |> ao clicar no lápis para editar, navega para "/produto/{id}"
 
-Clientes - texto "+ NOVO CLIENTE" bugado ao comprimir a página, filtrar não funciona, começar a lista de clientes com o cliente no começo e não no meio
+Clientes - texto "+ NOVO CLIENTE" bugado ao comprimir a página, filtrar não funciona, começar a lista de clientes com o cliente no começo e não no meio, colocar o grafico de INSIGHTS TECH ao lado do texto (tela grande) e centralizado acima do texto (tela menor)
 |> ao clicar "Adicionar Imagem" após clicar em "+ NOVO CLIENTE" não funciona, telefone só números, cpf só números
     |> dica de melhoria: automaticamente pegar a imagem do próprio email da pessoa
 
