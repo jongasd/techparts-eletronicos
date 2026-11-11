@@ -64,6 +64,12 @@ Crie um arquivo `.env` na raiz do backend (ele não deve ser versionado):
 | `UPLOAD_MAX_MB` | não | tamanho máximo por imagem (padrão `2`) |
 | `PUBLIC_API_URL` | não | URL pública da API, usada para montar `imagem_url` (sem barra final). Vazio = URL relativa |
 
+### Desenvolvimento local e deploy
+
+O arquivo `.env.example` contém o perfil local ativo (`127.0.0.1:3306`, banco `db_techparts`) e um perfil de produção comentado. Para desenvolvimento, copie-o para `.env`, informe a senha do MySQL local e gere um `JWT_SECRET` aleatório com pelo menos 32 caracteres. O `.env` real não deve ser enviado ao Git.
+
+No Render, configure as variáveis do bloco de produção em **Environment**, usando os dados do provedor MySQL externo. Não use `localhost` no Render: nesse ambiente, ele apontaria para o próprio container da API, não para o seu computador nem para o banco remoto. Habilite `DB_SSL=true` se o provedor exigir TLS e configure `CORS_ORIGIN` com a origem exata do frontend publicado.
+
 ## Instalação e execução
 
 ```bash
@@ -83,6 +89,12 @@ mysql -u seu_usuario -p db_techparts < src/migrations/004_produto_imagem.sql
 # 4. subir o servidor
 node src/server.js
 ```
+
+No Windows, a API pode ser iniciada na raiz do repositório com `npm --prefix backend start`; o frontend inicia com `npm --prefix frontend run dev`.
+
+Para bancos criados antes dos campos de contato de clientes, execute `npm --prefix backend run migrate:clientes-contatos` uma vez antes do deploy. A migração é idempotente e preserva os registros existentes.
+
+Se você esqueceu a senha do administrador **local**, execute `npm --prefix backend run reset:admin-local` em um terminal interativo; a senha digitada fica oculta. Se o terminal não aceitar entrada, use `npm --prefix backend run reset:admin-local -- --generate`: ele cria uma senha aleatória e a grava em `backend/.local-admin-credentials.txt`, ignorado pelo Git. O comando aceita apenas bancos em `localhost` e altera somente o login `admin`; isso não redefine a senha do Render.
 
 Problemas conhecidos neste setup (schema base e usuário `admin`): veja [README-PENDENCIAS.md](./README-PENDENCIAS.md).
 

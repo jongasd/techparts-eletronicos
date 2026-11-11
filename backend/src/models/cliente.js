@@ -5,7 +5,7 @@ const executarQuery = async (sql, valores = [], conn = pool) => {
   return resultado;
 };
 
-const CAMPOS_PUBLICOS = "id_cliente, nome_cliente, ativo";
+const CAMPOS_PUBLICOS = "id_cliente, nome_cliente, cpf, telefone, email, ativo";
 
 const Cliente = {
   findAll: async ({ pagina, limite, busca } = {}) => {
@@ -15,10 +15,10 @@ const Cliente = {
     const countParams = [];
 
     if (busca) {
-      sql += " AND nome_cliente LIKE ?";
-      sqlCount += " AND nome_cliente LIKE ?";
-      params.push(`%${busca}%`);
-      countParams.push(`%${busca}%`);
+      sql += " AND (nome_cliente LIKE ? OR cpf LIKE ? OR telefone LIKE ? OR email LIKE ?)";
+      sqlCount += " AND (nome_cliente LIKE ? OR cpf LIKE ? OR telefone LIKE ? OR email LIKE ?)";
+      params.push(`%${busca}%`, `%${busca}%`, `%${busca}%`, `%${busca}%`);
+      countParams.push(`%${busca}%`, `%${busca}%`, `%${busca}%`, `%${busca}%`);
     }
 
     sql += " ORDER BY nome_cliente ASC";

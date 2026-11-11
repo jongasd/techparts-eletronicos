@@ -1,62 +1,84 @@
+import { useEffect, useMemo, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { apiRequest } from '../../services/api';
 import icones from '../../assets/icones';
 import './Stock.css';
 
-const produtos = [
-    { id: '#TP-0942', nome: 'Intel Core i9-13900K', categoria: 'PROCESSADORES', quantidade: 42, preco: 'R$ 3.899,00', status: 'NORMAL' },
-    { id: '#TP-1288', nome: 'Corsair Vengeance 32GB DDR5', categoria: 'MEMÓRIA RAM', quantidade: 156, preco: 'R$ 1.150,00', status: 'NORMAL' },
-    { id: '#TP-2201', nome: 'Samsung 980 Pro 2TB NVMe', categoria: 'ARMAZENAMENTO', quantidade: 8, preco: 'R$ 980,00', status: 'BAIXO' },
-    { id: '#TP-4402', nome: 'NVIDIA RTX 4080 Founders', categoria: 'PLACAS DE VÍDEO', quantidade: 12, preco: 'R$ 8.490,00', status: 'NORMAL' },
-    { id: '#TP-5521', nome: 'EVGA SuperNOVA 850W Gold', categoria: 'FONTES ATX', quantidade: 0, preco: 'R$ 745,00', status: 'ESGOTADO' },
-    { id: '#TP-6610', nome: 'Noctua NH-D15 chromax.black', categoria: 'COOLERS', quantidade: 25, preco: 'R$ 620,00', status: 'NORMAL' },
-    { id: '#TP-7788', nome: 'Lian Li PC-O11 Dynamic', categoria: 'GABINETES', quantidade: 15, preco: 'R$ 1.250,00', status: 'NORMAL' },
-    { id: '#TP-1055', nome: 'AMD Ryzen 7 7800X3D', categoria: 'PROCESSADORES', quantidade: 5, preco: 'R$ 2.450,00', status: 'BAIXO' }
-];
-
 function Stock() {
+    const navigate = useNavigate();
+    const [produtos, setProdutos] = useState([]);
+    const [pesquisa, setPesquisa] = useState('');
+    const [carregando, setCarregando] = useState(true);
+    const [erro, setErro] = useState('');
+
+    useEffect(() => {
+        let montado = true;
+
+        Promise.all([apiRequest('/produtos'), apiRequest('/categorias')])
+            .then(([respostaProdutos, respostaCategorias]) => {
+                if (!montado) return;
+                const categorias = respostaCategorias.dados || [];
+                setProdutos((respostaProdutos.dados || []).map((produto) => ({
+                    ...produto,
+                    categoria: categorias.find(
+                        (item) => Number(item.id_categoria) === Number(produto.id_categoria)
+                    )?.nome || 'Sem categoria',
+                    quantidade: Number(produto.quantidade_estoque),
+                    minimo: Number(produto.quantidade_minima),
+                    preco: Number(produto.preco),
+                })));
+            })
+            .catch((error) => {
+                if (!montado) return;
+                setErro(error.message || 'Não foi possível carregar o estoque.');
+                if (error.message.includes('Token') || error.message.includes('Sessão')) {
+                    navigate('/');
+                }
+            })
+            .finally(() => {
+                if (montado) setCarregando(false);
+            });
+
+        return () => { montado = false; };
+    }, [navigate]);
+
+    const produtosFiltrados = useMemo(() => produtos.filter((produto) =>
+        `${produto.id_produto} ${produto.nome_produto} ${produto.categoria}`
+            .toLowerCase()
+            .includes(pesquisa.trim().toLowerCase())
+    ), [produtos, pesquisa]);
+
+    const quantidadeTotal = produtos.reduce((soma, produto) => soma + produto.quantidade, 0);
+    const valorTotal = produtos.reduce((soma, produto) => soma + produto.quantidade * produto.preco, 0);
+    const itensBaixos = produtos.filter((produto) => produto.quantidade <= produto.minimo).length;
+    const moeda = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+
     return (
         <div className="stock-page">
 
             <h1 className="stock-title">ESTOQUE</h1>
 
+            {erro && <p className="stock-error" role="alert">{erro}</p>}
+
             <section className="stock-metrics">
-                <div className="metric-card">
+                <div className="stock-metric">
                     <span className="metric-label">TOTAL DE ITENS</span>
-
-                    <div className="metric-info">
-                        <strong>12.450</strong>
-                        <img
-                            src={icones.usuario}
-                            alt=""
-                            className="metric-icon"
-                        />
-                    </div>
+                    <strong>{carregando ? '...' : quantidadeTotal.toLocaleString('pt-BR')}</strong>
                 </div>
 
-                <div className="metric-card">
+                <div className="stock-metric">
                     <span className="metric-label">VALOR DO ESTOQUE</span>
-
-                    <div className="metric-info">
-                        <strong>R$ 2.1M</strong>
-                        <img src={icones.dinheiro} alt="" className="metric-icon" />
-                    </div>
+                    <strong>{carregando ? '...' : moeda.format(valorTotal)}</strong>
                 </div>
 
-                <div className="metric-card">
+                <div className="stock-metric">
                     <span className="metric-label">ITENS EM BAIXA</span>
-
-                    <div className="metric-info">
-                        <strong className="metric-warning">14</strong>
-                        <img src={icones.atencao} alt="" className="metric-icon-danger" />
-                    </div>
+                    <strong className="metric-warning">{carregando ? '...' : itensBaixos}</strong>
                 </div>
 
-                <div className="metric-card">
-                    <span className="metric-label">GIRO DE ESTOQUE</span>
-
-                    <div className="metric-info">
-                        <strong>12 dias</strong>
-                        <img src={icones.repor} alt="" className="metric-icon" />
-                    </div>
+                <div className="stock-metric">
+                    <span className="metric-label">PRODUTOS ATIVOS</span>
+                    <strong>{carregando ? '...' : produtos.length}</strong>
                 </div>
             </section>
 
@@ -66,12 +88,11 @@ function Stock() {
                     <input
                         type="search"
                         placeholder="Pesquisar componentes, IDs ou categorias..."
+                        value={pesquisa}
+                        onChange={(event) => setPesquisa(event.target.value)}
                     />
 
-                    <div className="stock-filter">
-                        <img src={icones.filtro}alt=''/>
-                        Filtros
-                    </div>
+                    <Link to="/produtos" className="stock-new-item">GERENCIAR PRODUTOS</Link>
                 </div>
 
                 <table className="stock-table">
@@ -87,33 +108,44 @@ function Stock() {
                     </thead>
 
                     <tbody>
-                        {produtos.map((produto) => (
-                            <tr key={produto.id}>
-                                <td>{produto.id}</td>
+                        {carregando ? (
+                            <tr><td colSpan="6">Carregando estoque...</td></tr>
+                        ) : produtosFiltrados.map((produto) => {
+                            const status = produto.quantidade <= 0
+                                ? 'ESGOTADO'
+                                : produto.quantidade <= produto.minimo ? 'BAIXO' : 'NORMAL';
+                            return (
+                            <tr key={produto.id_produto}>
+                                <td>#{produto.id_produto}</td>
 
                                 <td>
-                                    <strong>{produto.nome}</strong>
+                                    <strong>{produto.nome_produto}</strong>
                                     <small>{produto.categoria}</small>
                                 </td>
 
                                 <td>{produto.quantidade} un.</td>
 
-                                <td>{produto.preco}</td>
+                                <td>{moeda.format(produto.preco)}</td>
 
                                 <td>
-                                    <span className={`stock-status ${produto.status.toLowerCase()}`}>
-                                        {produto.status}
+                                    <span className={`stock-status ${status.toLowerCase()}`}>
+                                        {status}
                                     </span>
                                 </td>
 
                                 <td>
                                     <div className="stock-actions">
-                                        <img src={icones.visibilidade} alt="Visualizar produto" />
-                                        <img src={icones.editar} alt="Editar produto" />
+                                        <Link to="/produtos" aria-label={`Editar ${produto.nome_produto}`} title="Editar produto">
+                                            <img src={icones.editar} alt="" />
+                                        </Link>
                                     </div>
                                 </td>
                             </tr>
-                        ))}
+                            );
+                        })}
+                        {!carregando && produtosFiltrados.length === 0 && (
+                            <tr><td colSpan="6">Nenhum produto encontrado.</td></tr>
+                        )}
                     </tbody>
                 </table>
 

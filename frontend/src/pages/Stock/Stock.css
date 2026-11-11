@@ -129,6 +129,12 @@
 .stock-new-item {
     color: #fff;
     background: var(--azul-escuro);
+    text-decoration: none;
+}
+
+.stock-error {
+    margin: 0;
+    color: #b42318;
 }
 
 /* ===== CONTEÚDO DA TABELA ===== */

@@ -1,5 +1,11 @@
 /* ===== CONTEÚDO DO DASHBOARD ===== */
 
+.dashboard-error {
+    margin: 0;
+    color: #b42318;
+    font-size: 14px;
+}
+
 .metrics-grid {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));

@@ -1,5 +1,6 @@
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import {
     ResponsiveContainer,
@@ -12,72 +13,102 @@ import {
 } from 'recharts';
 
 import './Dashboard.css';
-
-// Dados demonstrativos. Depois serão substituídos pela API.
-const dadosSemanais = [
-    { periodo: 'Seg', lucro: 12000 },
-    { periodo: 'Ter', lucro: 19000 },
-    { periodo: 'Qua', lucro: 15000 },
-    { periodo: 'Qui', lucro: 25000 },
-    { periodo: 'Sex', lucro: 22000 },
-    { periodo: 'Sáb', lucro: 30000 },
-    { periodo: 'Dom', lucro: 28000 }
-];
-
-const dadosMensais = [
-    { periodo: 'Jan', lucro: 23500 },
-    { periodo: 'Fev', lucro: 15500 },
-    { periodo: 'Mar', lucro: 2700 },
-    { periodo: 'Abr', lucro: 3600 },
-    { periodo: 'Mai', lucro: 7000 },
-    { periodo: 'Jun', lucro: 13500 },
-    { periodo: 'Jul', lucro: 29000 },
-    { periodo: 'Ago', lucro: 18000 },
-    { periodo: 'Set', lucro: 7500 },
-    { periodo: 'Out', lucro: 4300 },
-    { periodo: 'Nov', lucro: 13500 },
-    { periodo: 'Dez', lucro: 25200 }
-];
+import { apiRequest } from '../../services/api';
 
 function Dashboard() {
-    const [periodo, setPeriodo] = useState('Semanal');
+    const navigate = useNavigate();
+    const [dias, setDias] = useState(7);
+    const [resumo, setResumo] = useState(null);
+    const [movimentacoes, setMovimentacoes] = useState({ entradas: [], saidas: [] });
+    const [categorias, setCategorias] = useState([]);
+    const [estoqueBaixo, setEstoqueBaixo] = useState([]);
+    const [totalClientes, setTotalClientes] = useState(0);
+    const [carregando, setCarregando] = useState(true);
+    const [erro, setErro] = useState('');
 
-    const dadosGrafico =
-        periodo === 'Mensal' ? dadosMensais : dadosSemanais;
+    useEffect(() => {
+        let montado = true;
+
+        Promise.all([
+            apiRequest('/dashboard/resumo'),
+            apiRequest('/dashboard/produtos-categoria'),
+            apiRequest(`/dashboard/movimentacoes?dias=${dias}`),
+            apiRequest('/dashboard/estoque-baixo'),
+            apiRequest('/clientes?pagina=1&limite=1'),
+        ])
+            .then(([dadosResumo, dadosCategorias, dadosMovimentacoes, dadosBaixos, dadosClientes]) => {
+                if (!montado) return;
+                setResumo(dadosResumo);
+                setCategorias(dadosCategorias || []);
+                setMovimentacoes(dadosMovimentacoes || { entradas: [], saidas: [] });
+                setEstoqueBaixo(dadosBaixos || []);
+                setTotalClientes(Number(dadosClientes.total || 0));
+            })
+            .catch((error) => {
+                if (!montado) return;
+                setErro(error.message || 'Não foi possível carregar o dashboard.');
+                if (error.message.includes('Token') || error.message.includes('Sessão')) {
+                    navigate('/');
+                }
+            })
+            .finally(() => {
+                if (montado) setCarregando(false);
+            });
+
+        return () => { montado = false; };
+    }, [dias, navigate]);
+
+    const dadosGrafico = useMemo(() => {
+        const totalizar = (itens) => new Map(itens.map((item) => [
+            String(item.data).slice(0, 10), Number(item.total)
+        ]));
+        const entradas = totalizar(movimentacoes.entradas || []);
+        const saidas = totalizar(movimentacoes.saidas || []);
+
+        return Array.from({ length: dias }, (_, indice) => {
+            const data = new Date();
+            data.setHours(12, 0, 0, 0);
+            data.setDate(data.getDate() - (dias - indice - 1));
+            const chave = data.toISOString().slice(0, 10);
+            return {
+                periodo: data.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
+                entradas: entradas.get(chave) || 0,
+                saidas: saidas.get(chave) || 0,
+            };
+        });
+    }, [dias, movimentacoes]);
+
+    const moeda = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+    const numero = (valor) => Number(valor || 0).toLocaleString('pt-BR');
 
     return (
         <>
+            {erro && <p className="dashboard-error" role="alert">{erro}</p>}
             {/* INDICADORES */}
             <section className="metrics-grid" aria-label="Indicadores gerais">
 
                 <article className="metric-card">
-                    <span className="metric-label">CHECAR ESTOQUE</span>
-                    <strong className="metric-value">40 Dias</strong>
-                    <span className="metric-positive">
-                        12 dias restantes
-                    </span>
+                    <span className="metric-label">PRODUTOS ATIVOS</span>
+                    <strong className="metric-value">{carregando ? '...' : numero(resumo?.total_produtos_ativos)}</strong>
+                    <span className="metric-muted">Cadastrados no estoque</span>
                 </article>
 
                 <article className="metric-card">
-                    <span className="metric-label">MARGEM BRUTA</span>
-                    <strong className="metric-value">32%</strong>
-                    <span className="metric-positive">
-                        +4.2% este mês
-                    </span>
+                    <span className="metric-label">VALOR EM ESTOQUE</span>
+                    <strong className="metric-value">{carregando ? '...' : moeda.format(Number(resumo?.valor_total_estoque || 0))}</strong>
+                    <span className="metric-muted">Preço atual × quantidade</span>
                 </article>
 
                 <article className="metric-card">
-                    <span className="metric-label">ATIVOS TOTAIS</span>
-                    <strong className="metric-value">R$ 1.2M</strong>
-                    <span className="metric-muted">Capacidade: 84%</span>
+                    <span className="metric-label">ABAIXO DO MÍNIMO</span>
+                    <strong className="metric-value">{carregando ? '...' : numero(resumo?.produtos_abaixo_minimo)}</strong>
+                    <span className="metric-muted">Produtos para repor</span>
                 </article>
 
                 <article className="metric-card">
-                    <span className="metric-label">VENDAS DO MÊS</span>
-                    <strong className="metric-value">R$85.400</strong>
-                    <span className="metric-positive">
-                        +8,5% em relação ao mês anterior
-                    </span>
+                    <span className="metric-label">MOVIMENTAÇÕES HOJE</span>
+                    <strong className="metric-value">{carregando ? '...' : numero(Number(resumo?.entradas_hoje || 0) + Number(resumo?.saidas_hoje || 0))}</strong>
+                    <span className="metric-muted">Entradas e saídas</span>
                 </article>
 
             </section>
@@ -86,25 +117,25 @@ function Dashboard() {
             <section className="dashboard-panel profit-panel">
 
                 <div className="panel-heading">
-                    <h2>LUCRO {periodo.toUpperCase()}</h2>
+                    <h2>MOVIMENTAÇÕES · {dias} DIAS</h2>
 
                     <div className="period-selector" aria-label="Período do gráfico">
                         <button
                             type="button"
-                            className={periodo === 'Mensal' ? 'selected' : ''}
-                            aria-pressed={periodo === 'Mensal'}
-                            onClick={() => setPeriodo('Mensal')}
+                            className={dias === 7 ? 'selected' : ''}
+                            aria-pressed={dias === 7}
+                            onClick={() => setDias(7)}
                         >
-                            Mensal
+                            7 dias
                         </button>
 
                         <button
                             type="button"
-                            className={periodo === 'Semanal' ? 'selected' : ''}
-                            aria-pressed={periodo === 'Semanal'}
-                            onClick={() => setPeriodo('Semanal')}
+                            className={dias === 30 ? 'selected' : ''}
+                            aria-pressed={dias === 30}
+                            onClick={() => setDias(30)}
                         >
-                            Semanal
+                            30 dias
                         </button>
                     </div>
                 </div>
@@ -126,32 +157,20 @@ function Dashboard() {
                             />
 
                             <YAxis
-                                domain={[0, 30000]}
-                                ticks={[0, 5000, 10000, 15000, 20000, 25000, 30000]}
+                                allowDecimals={false}
                                 axisLine={false}
                                 tickLine={false}
                                 tick={{ fill: '#929aa5', fontSize: 11 }}
-                                tickFormatter={(valor) =>
-                                    valor.toLocaleString('pt-BR')
-                                }
+                                tickFormatter={numero}
                                 width={48}
                             />
 
                             <Tooltip
-                                formatter={(valor) => [
-                                    `R$ ${Number(valor).toLocaleString('pt-BR')}`,
-                                    'Lucro'
-                                ]}
-                                labelFormatter={(label) => `Período: ${label}`}
+                                formatter={(valor, nome) => [numero(valor), nome]}
                             />
 
-                            <Bar
-                                dataKey="lucro"
-                                fill="#06395c"
-                                radius={[7, 7, 0, 0]}
-                                maxBarSize={40}
-                                animationDuration={350}
-                            />
+                            <Bar dataKey="entradas" name="Entradas" fill="#087f5b" radius={[5, 5, 0, 0]} maxBarSize={28} />
+                            <Bar dataKey="saidas" name="Saídas" fill="#c45432" radius={[5, 5, 0, 0]} maxBarSize={28} />
                         </BarChart>
                     </ResponsiveContainer>
                 </div>
@@ -161,86 +180,51 @@ function Dashboard() {
             <section className="bottom-panels">
 
                 <article className="dashboard-panel team-panel">
-                    <h2>Equipe &amp; Funcionários</h2>
-
-                    <div className="team-stat">
-                        <span className="stat-icon"></span>
-
-                        <div className="team-stat-text">
-                            <strong>Total de Ativos</strong>
-                            <span>Funcionários em campo</span>
+                    <h2>Produtos abaixo do mínimo</h2>
+                    {carregando ? <p>Carregando alertas...</p> : estoqueBaixo.length ? estoqueBaixo.slice(0, 5).map((produto) => (
+                        <div className="team-stat" key={produto.id_produto}>
+                            <span className="stat-icon" aria-hidden="true">!</span>
+                            <div className="team-stat-text">
+                                <strong>{produto.nome_produto}</strong>
+                                <span>Estoque / mínimo</span>
+                            </div>
+                            <strong className="stat-number">{numero(produto.quantidade_estoque)} / {numero(produto.quantidade_minima)}</strong>
                         </div>
-
-                        <strong className="stat-number">142</strong>
-                    </div>
-
-                    <div className="team-stat">
-                        <span className="stat-icon"></span>
-
-                        <div className="team-stat-text">
-                            <strong>Equipes de Manutenção</strong>
-                            <span>Técnicos especializados</span>
-                        </div>
-
-                        <strong className="stat-number">08</strong>
-                    </div>
-
-                    <div className="efficiency">
-                        <span className="section-caption">EFICIÊNCIA DA EQUIPE</span>
-
-                        <div className="progress-track">
-                            <div className="progress-value" style={{ width: '92%' }} />
-                        </div>
-
-                        <div className="progress-labels">
-                            <span>Performance: 92%</span>
-                            <span>Meta: 85%</span>
-                        </div>
-                    </div>
+                    )) : <p>Nenhum produto abaixo do mínimo.</p>}
                 </article>
 
                 <article className="dashboard-panel clients-panel">
-                    <h2>Visão Geral de Clientes</h2>
+                    <h2>Clientes e categorias</h2>
 
                     <div className="client-metrics">
                         <div className="client-metric">
-                            <span>NOVOS (30 DIAS)</span>
-                            <strong>+24</strong>
+                            <span>CLIENTES ATIVOS</span>
+                            <strong>{carregando ? '...' : numero(totalClientes)}</strong>
                         </div>
 
                         <div className="client-metric">
-                            <span>CHURN RATE</span>
-                            <strong className="churn-value">1.2%</strong>
+                            <span>CATEGORIAS</span>
+                            <strong>{carregando ? '...' : numero(categorias.length)}</strong>
                         </div>
                     </div>
 
                     <span className="section-caption">
-                        PRINCIPAIS CLIENTES POR VOLUME
+                        PRODUTOS POR CATEGORIA
                     </span>
 
-                    <div className="client-volume">
-                        <span className="client-initials">IN</span>
-                        <div className="volume-track">
-                            <div style={{ width: '80%' }} />
-                        </div>
-                        <strong>80%</strong>
-                    </div>
-
-                    <div className="client-volume">
-                        <span className="client-initials">ME</span>
-                        <div className="volume-track">
-                            <div style={{ width: '65%' }} />
-                        </div>
-                        <strong>65%</strong>
-                    </div>
-
-                    <div className="client-volume">
-                        <span className="client-initials">TC</span>
-                        <div className="volume-track">
-                            <div style={{ width: '40%' }} />
-                        </div>
-                        <strong>40%</strong>
-                    </div>
+                    {categorias.slice(0, 4).map((item) => {
+                        const maiorTotal = Math.max(...categorias.map((categoria) => Number(categoria.total)), 1);
+                        const percentual = Math.max(Number(item.total) > 0 ? 6 : 0, Number(item.total) / maiorTotal * 100);
+                        return (
+                            <div className="client-volume" key={item.categoria}>
+                                <span className="client-initials">{item.categoria.slice(0, 2).toUpperCase()}</span>
+                                <div className="volume-track" aria-label={`${item.categoria}: ${numero(item.total)} produtos`}>
+                                    <div style={{ width: `${percentual}%` }} />
+                                </div>
+                                <strong>{numero(item.total)}</strong>
+                            </div>
+                        );
+                    })}
                 </article>
 
             </section>

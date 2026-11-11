@@ -5,6 +5,8 @@ const auth = require("../middlewares/auth");
 const autorizar = require("../middlewares/autorizar");
 
 router.post("/login", authController.login);
+router.get("/perfil", auth, authController.perfil);
+router.put("/perfil", auth, authController.atualizarPerfil);
 
 // Só quem já está logado E tem permissão de gerenciar funcionários
 // (por padrão, só Administrador) pode criar novo login.

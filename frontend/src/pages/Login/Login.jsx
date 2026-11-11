@@ -1,17 +1,41 @@
 import './Login.css'
 
 import { Link, useNavigate } from 'react-router-dom'
+import { useState } from 'react'
 
 import icones from '../../assets/icones' 
 
 import chipImage from '../../assets/chip.png'
+import { apiRequest, saveAuthToken } from '../../services/api'
 
 function Login() {
     const navigate = useNavigate()
-    
-    function irHome(){
-        navigate('/home')
+    const [login, setLogin] = useState('')
+    const [senha, setSenha] = useState('')
+    const [lembrar, setLembrar] = useState(false)
+    const [erro, setErro] = useState('')
+    const [carregando, setCarregando] = useState(false)
+
+    async function entrar(event) {
+        event.preventDefault()
+        setErro('')
+        setCarregando(true)
+
+        try {
+            const resposta = await apiRequest('/auth/login', {
+                method: 'POST',
+                body: JSON.stringify({ login, senha })
+            })
+
+            saveAuthToken(resposta.token, lembrar)
+            navigate('/home')
+        } catch (error) {
+            setErro(error.message || 'Não foi possível entrar.')
+        } finally {
+            setCarregando(false)
+        }
     }
+
     return (
         <div className="login-page">
 
@@ -55,6 +79,7 @@ function Login() {
                     </p>
 
 
+                    <form onSubmit={entrar}>
                     {/* Nome */}
                     <div className="mb-4">
 
@@ -69,6 +94,10 @@ function Login() {
                                 id="nome"
                                 className="form-control login-input"
                                 placeholder="Digite seu nome de usuário"
+                                value={login}
+                                onChange={(event) => setLogin(event.target.value)}
+                                autoComplete="username"
+                                required
                             />
 
                             <img
@@ -102,6 +131,10 @@ function Login() {
                                 id="senha"
                                 className="form-control login-input"
                                 placeholder="••••••••"
+                                value={senha}
+                                onChange={(event) => setSenha(event.target.value)}
+                                autoComplete="current-password"
+                                required
                             />
 
                             <img
@@ -129,6 +162,8 @@ function Login() {
                             type="checkbox"
                             id="lembrar"
                             className="form-check-input"
+                            checked={lembrar}
+                            onChange={(event) => setLembrar(event.target.checked)}
                         />
 
                         <label
@@ -142,10 +177,13 @@ function Login() {
 
 
                     {/* Botão */}
-                    <button className="btn login-button w-100" type='button' onClick={irHome}>
-                        Login
+                    {erro && <p className="text-danger" role="alert">{erro}</p>}
+
+                    <button className="btn login-button w-100" type="submit" disabled={carregando}>
+                        {carregando ? 'Entrando...' : 'Login'}
                         <span>→</span>
                     </button>
+                    </form>
 
 
                     {/* Separador */}
@@ -154,10 +192,7 @@ function Login() {
 
                     {/* Cadastro */}
                     <p className="register-text">
-                        Não tem uma conta?{' '}
-                        <Link to={"/register"}>
-                            Cadastre-se
-                        </Link>
+                        Precisa de acesso? Solicite ao administrador do sistema.
                     </p>
 
                 </div>

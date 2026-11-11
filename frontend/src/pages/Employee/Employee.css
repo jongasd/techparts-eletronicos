@@ -65,6 +65,10 @@
 .btn-novo-funcionario {
     background-color: #003b63;
     color: white;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
 }
 
 .btn-exportar span,
@@ -179,6 +183,13 @@
     overflow-wrap: anywhere;
 }
 
+.funcionario-card p {
+    margin: -4px 0 10px;
+    color: #60758e;
+    font-size: 13px;
+    overflow-wrap: anywhere;
+}
+
 .departamento-tag {
     background-color: #add0df;
     color: #102f3c;
@@ -186,6 +197,36 @@
     border-radius: 25px;
     font-size: 12px;
     font-weight: bold;
+}
+
+.funcionario-situacao {
+    margin-top: 10px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.funcionario-situacao.ativo {
+    color: #087443;
+}
+
+.funcionario-situacao.inativo {
+    color: #b42318;
+}
+
+.btn-desativar-funcionario {
+    margin-top: 10px;
+    padding: 6px 10px;
+    color: #b42318;
+    background: #fff;
+    border: 1px solid #e6b8b5;
+    border-radius: 5px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.funcionarios-erro {
+    margin: 0 0 18px;
+    color: #b42318;
 }
 
 .nenhum-funcionario {

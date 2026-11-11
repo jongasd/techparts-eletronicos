@@ -532,6 +532,42 @@
     text-decoration: underline;
 }
 
+.products-erro {
+    margin-bottom: 16px;
+    padding: 12px 14px;
+    color: #842029;
+    background: #f8d7da;
+    border: 1px solid #f1aeb5;
+    border-radius: 6px;
+}
+
+.products-item-actions {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+}
+
+.products-item-actions button {
+    padding: 6px 9px;
+    color: #063b60;
+    background: #ffffff;
+    border: 1px solid #dce2e8;
+    border-radius: 5px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.products-item-actions button:last-child {
+    color: #b42318;
+}
+
+.products-item-actions button:disabled,
+.products-modal-acoes button:disabled {
+    cursor: wait;
+    opacity: 0.65;
+}
+
 /* =========================================
    IMAGEM NA TABELA
 ========================================= */

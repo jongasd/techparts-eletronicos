@@ -2,6 +2,37 @@ const authService = require("../services/authService");
 const Auditoria = require("../models/auditoria");
 
 const authController = {
+  perfil: async (req, res, next) => {
+    try {
+      const perfil = await authService.buscarPerfil(req.funcionario.id_funcionario);
+      res.json({ sucesso: true, dados: perfil });
+    } catch (erro) {
+      next(erro);
+    }
+  },
+
+  atualizarPerfil: async (req, res, next) => {
+    try {
+      const perfil = await authService.atualizarPerfil(
+        req.funcionario.id_funcionario,
+        req.body,
+      );
+
+      await Auditoria.create({
+        id_funcionario: req.funcionario.id_funcionario,
+        acao: "ATUALIZAR_PERFIL",
+        recurso: "funcionarios",
+        id_recurso: req.funcionario.id_funcionario,
+        detalhes: { login: perfil.login },
+        ip: req.ip,
+      });
+
+      res.json({ sucesso: true, dados: perfil, mensagem: "Perfil atualizado com sucesso" });
+    } catch (erro) {
+      next(erro);
+    }
+  },
+
   login: async (req, res, next) => {
     try {
       const { login, senha } = req.body;

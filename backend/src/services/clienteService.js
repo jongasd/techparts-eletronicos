@@ -8,15 +8,14 @@ const {
 
 const CAMPOS_OBRIGATORIOS_CRIACAO = ["nome_cliente"];
 
-const CAMPOS_ATUALIZAVEIS = ["nome_cliente", "ativo"];
+const CAMPOS_ATUALIZAVEIS = ["nome_cliente", "cpf", "telefone", "email", "ativo"];
 
 const extrairCamposAtualizaveis = (body) => {
   return CAMPOS_ATUALIZAVEIS.reduce((acc, campo) => {
     if (body[campo] !== undefined && body[campo] !== "") {
-      acc[campo] =
-        campo === "ativo"
-          ? parseAtivo(body[campo])
-          : String(body[campo]).trim();
+      acc[campo] = campo === "ativo"
+        ? parseAtivo(body[campo])
+        : String(body[campo]).trim();
     }
     return acc;
   }, {});
@@ -43,6 +42,18 @@ const clienteService = {
       nome_cliente: String(body.nome_cliente).trim(),
       ativo: body.ativo !== undefined ? parseAtivo(body.ativo) : 1,
     };
+
+    for (const campo of ["cpf", "telefone", "email"]) {
+      if (body[campo] !== undefined) {
+        dados[campo] = body[campo] === "" || body[campo] === null
+          ? null
+          : String(body[campo]).trim();
+      }
+    }
+
+    if (dados.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(dados.email)) {
+      throw new AppError("Email inválido", 400);
+    }
 
     return await Cliente.create(dados);
   },

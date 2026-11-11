@@ -1,74 +1,76 @@
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { apiRequest, resolveApiUrl } from "../../services/api";
 import "./Products.css";
 
 function Products() {
-
-    // Produtos fictícios para testar a página
-    const [produtos, setProdutos] = useState([
-        {
-            id: 1,
-            nome: "Processador Core i9 14th Gen",
-            descricao: "Intel Precision Series",
-            sku: "PRC-INT-14900K",
-            categoria: "Placas",
-            preco: 3890.00,
-            estoque: 42,
-            status: "Ativo",
-            imagem: ""
-        },
-        {
-            id: 2,
-            nome: 'Monitor Ultrawide 34" QHD',
-            descricao: "Precision Visuais",
-            sku: "MON-VIS-34QHD",
-            categoria: "Periféricos",
-            preco: 2450.00,
-            estoque: 8,
-            status: "Ativo",
-            imagem: ""
-        },
-        {
-            id: 3,
-            nome: "SSD NVMe Gen5 2TB",
-            descricao: "Extreme Storage Pro",
-            sku: "STO-XTR-02TB",
-            categoria: "Armazenamento",
-            preco: 1150.00,
-            estoque: 124,
-            status: "Inativo",
-            imagem: ""
-        }
-    ]);
+    const navigate = useNavigate();
+    const [produtos, setProdutos] = useState([]);
+    const [categorias, setCategorias] = useState([]);
+    const [carregando, setCarregando] = useState(true);
+    const [salvando, setSalvando] = useState(false);
+    const [erro, setErro] = useState("");
 
     // Estados dos filtros
     const [pesquisa, setPesquisa] = useState("");
     const [categoriaSelecionada, setCategoriaSelecionada] = useState("Todas");
-    const [statusSelecionado, setStatusSelecionado] = useState("Todos");
-
     // Estado do formulário de cadastro
     const [modalAberto, setModalAberto] = useState(false);
+    const [produtoEditando, setProdutoEditando] = useState(null);
+    const [arquivoImagem, setArquivoImagem] = useState(null);
+    const [imagemPreview, setImagemPreview] = useState("");
+    const arquivoImagemRef = useRef(null);
 
     const [novoProduto, setNovoProduto] = useState({
-        nome: "",
-        descricao: "",
-        sku: "",
-        categoria: "",
+        nome_produto: "",
+        localizacao: "",
+        id_categoria: "",
         preco: "",
-        estoque: "",
-        status: "Ativo",
-        imagem: ""
+        quantidade_estoque: "0",
+        quantidade_minima: "0"
     });
 
-    // Categorias disponíveis
-    const categorias = [
-        "Placas",
-        "Periféricos",
-        "Armazenamento",
-        "Processadores",
-        "Memórias",
-        "Acessórios"
-    ];
+    useEffect(() => {
+        let montado = true;
+
+        async function carregar() {
+            try {
+                const [respostaProdutos, respostaCategorias] = await Promise.all([
+                    apiRequest("/produtos"),
+                    apiRequest("/categorias")
+                ]);
+
+                if (!montado) return;
+
+                const categoriasApi = respostaCategorias.dados || [];
+                setCategorias(categoriasApi);
+                setProdutos((respostaProdutos.dados || []).map((produto) => ({
+                    ...produto,
+                    nome: produto.nome_produto,
+                    descricao: produto.localizacao || "",
+                    categoria: categoriasApi.find(
+                        (categoria) => Number(categoria.id_categoria) === Number(produto.id_categoria)
+                    )?.nome || "Sem categoria",
+                    preco: Number(produto.preco),
+                    estoque: Number(produto.quantidade_estoque),
+                    status: Number(produto.ativo) === 1 ? "Ativo" : "Inativo",
+                    imagem: resolveApiUrl(produto.imagem_url)
+                })));
+            } catch (error) {
+                if (!montado) return;
+                setErro(error.message || "Não foi possível carregar os produtos.");
+                if (error.message.includes("Token") || error.message.includes("Sessão")) {
+                    navigate("/");
+                }
+            } finally {
+                if (montado) setCarregando(false);
+            }
+        }
+
+        carregar();
+        return () => { montado = false; };
+    }, [navigate]);
 
     // Filtra os produtos conforme os campos selecionados
     const produtosFiltrados = useMemo(() => {
@@ -83,18 +85,10 @@ function Products() {
                 categoriaSelecionada === "Todas" ||
                 produto.categoria === categoriaSelecionada;
 
-            const correspondeStatus =
-                statusSelecionado === "Todos" ||
-                produto.status === statusSelecionado;
-
-            return (
-                correspondePesquisa &&
-                correspondeCategoria &&
-                correspondeStatus
-            );
+            return correspondePesquisa && correspondeCategoria;
         });
 
-    }, [produtos, pesquisa, categoriaSelecionada, statusSelecionado]);
+    }, [produtos, pesquisa, categoriaSelecionada]);
 
     // Atualiza os campos do formulário
     function atualizarCampo(e) {
@@ -131,55 +125,133 @@ function Products() {
             return;
         }
 
+        setArquivoImagem(arquivo);
         const leitor = new FileReader();
 
         leitor.onload = () => {
-            setNovoProduto((anterior) => ({
-                ...anterior,
-                imagem: leitor.result
-            }));
+            setImagemPreview(leitor.result);
         };
 
         leitor.readAsDataURL(arquivo);
     }
 
-    // Cadastra um novo produto
-    function cadastrarProduto(e) {
+    // Cadastra ou atualiza um produto
+    async function salvarProduto(e) {
         e.preventDefault();
 
         if (
-            !novoProduto.nome.trim() ||
-            !novoProduto.sku.trim() ||
-            !novoProduto.categoria ||
+            !novoProduto.nome_produto.trim() ||
+            !novoProduto.id_categoria ||
             novoProduto.preco === "" ||
-            novoProduto.estoque === ""
+            novoProduto.quantidade_estoque === "" ||
+            novoProduto.quantidade_minima === ""
         ) {
             alert("Preencha todos os campos obrigatórios.");
             return;
         }
 
-        const produto = {
-            ...novoProduto,
-            id: Date.now(),
-            preco: Number(novoProduto.preco),
-            estoque: Number(novoProduto.estoque)
-        };
+        setErro("");
+        setSalvando(true);
+        const dados = new FormData();
+        Object.entries(novoProduto).forEach(([campo, valor]) => dados.append(campo, valor));
+        if (arquivoImagem) dados.append("imagem", arquivoImagem);
 
-        setProdutos((anterior) => [...anterior, produto]);
+        try {
+            const caminho = produtoEditando
+                ? `/produtos/${produtoEditando.id_produto}`
+                : "/produtos";
+            await apiRequest(caminho, {
+                method: produtoEditando ? "PUT" : "POST",
+                body: dados
+            });
 
-        // Limpa o formulário
+            const resposta = await apiRequest("/produtos");
+            setProdutos((resposta.dados || []).map((produto) => ({
+                ...produto,
+                nome: produto.nome_produto,
+                descricao: produto.localizacao || "",
+                categoria: categorias.find(
+                    (categoria) => Number(categoria.id_categoria) === Number(produto.id_categoria)
+                )?.nome || "Sem categoria",
+                preco: Number(produto.preco),
+                estoque: Number(produto.quantidade_estoque),
+                status: Number(produto.ativo) === 1 ? "Ativo" : "Inativo",
+                imagem: resolveApiUrl(produto.imagem_url)
+            })));
+            limparFormulario();
+        } catch (error) {
+            setErro(error.message || "Não foi possível salvar o produto.");
+        } finally {
+            setSalvando(false);
+        }
+    }
+
+    function limparFormulario() {
         setNovoProduto({
-            nome: "",
-            descricao: "",
-            sku: "",
-            categoria: "",
+            nome_produto: "",
+            localizacao: "",
+            id_categoria: "",
             preco: "",
-            estoque: "",
-            status: "Ativo",
-            imagem: ""
+            quantidade_estoque: "0",
+            quantidade_minima: "0"
         });
-
+        setProdutoEditando(null);
+        setArquivoImagem(null);
+        setImagemPreview("");
+        if (arquivoImagemRef.current) arquivoImagemRef.current.value = "";
         setModalAberto(false);
+    }
+
+    function editarProduto(produto) {
+        setProdutoEditando(produto);
+        setNovoProduto({
+            nome_produto: produto.nome_produto,
+            localizacao: produto.localizacao || "",
+            id_categoria: String(produto.id_categoria),
+            preco: String(produto.preco),
+            quantidade_estoque: String(produto.quantidade_estoque),
+            quantidade_minima: String(produto.quantidade_minima)
+        });
+        setImagemPreview(resolveApiUrl(produto.imagem_url));
+        setArquivoImagem(null);
+        setModalAberto(true);
+    }
+
+    async function desativarProduto(produto) {
+        if (!window.confirm(`Desativar o produto ${produto.nome_produto}?`)) return;
+
+        setErro("");
+        try {
+            await apiRequest(`/produtos/${produto.id_produto}/desativar`, { method: "PUT" });
+            setProdutos((anteriores) => anteriores.filter(
+                (item) => item.id_produto !== produto.id_produto
+            ));
+        } catch (error) {
+            setErro(error.message || "Não foi possível desativar o produto.");
+        }
+    }
+
+    async function removerImagem() {
+        if (arquivoImagem) {
+            setArquivoImagem(null);
+            setImagemPreview(produtoEditando ? resolveApiUrl(produtoEditando.imagem_url) : "");
+            if (arquivoImagemRef.current) arquivoImagemRef.current.value = "";
+            return;
+        }
+
+        if (!produtoEditando || !produtoEditando.imagem_url) return;
+        try {
+            await apiRequest(`/produtos/${produtoEditando.id_produto}/imagem`, { method: "DELETE" });
+            setImagemPreview("");
+            setProdutoEditando({ ...produtoEditando, imagem_url: null });
+            setProdutos((anteriores) => anteriores.map((produto) =>
+                produto.id_produto === produtoEditando.id_produto
+                    ? { ...produto, imagem_url: null, imagem: "" }
+                    : produto
+            ));
+        } catch (error) {
+            setErro(error.message || "Não foi possível remover a imagem.");
+        }
     }
 
     // Exporta os produtos filtrados para CSV
@@ -187,8 +259,8 @@ function Products() {
 
         const cabecalho = [
             "Nome",
-            "Descrição",
-            "SKU",
+            "Localização",
+            "ID",
             "Categoria",
             "Preço",
             "Estoque",
@@ -198,7 +270,7 @@ function Products() {
         const linhas = produtosFiltrados.map((produto) => [
             produto.nome,
             produto.descricao,
-            produto.sku,
+            produto.id_produto,
             produto.categoria,
             produto.preco.toFixed(2).replace(".", ","),
             produto.estoque,
@@ -233,6 +305,7 @@ function Products() {
 
     return (
         <div className="products-page">
+            {erro && <div className="products-erro" role="alert">{erro}</div>}
 
             {/* CABEÇALHO DA PÁGINA */}
             <div className="products-topo">
@@ -250,7 +323,13 @@ function Products() {
 
                     <button
                         className="products-btn-novo"
-                        onClick={() => setModalAberto(true)}
+                        onClick={() => {
+                            setProdutoEditando(null);
+                            setNovoProduto({ nome_produto: "", localizacao: "", id_categoria: "", preco: "", quantidade_estoque: "0", quantidade_minima: "0" });
+                            setArquivoImagem(null);
+                            setImagemPreview("");
+                            setModalAberto(true);
+                        }}
                     >
                         + NOVO PRODUTO
                     </button>
@@ -280,38 +359,12 @@ function Products() {
                     <option value="Todas">Todas as categorias</option>
 
                     {categorias.map((categoria) => (
-                        <option key={categoria} value={categoria}>
-                            {categoria}
+                        <option key={categoria.id_categoria} value={categoria.nome}>
+                            {categoria.nome}
                         </option>
                     ))}
 
                 </select>
-
-            </div>
-
-            {/* FILTRO POR STATUS */}
-            <div className="products-status-filtros">
-
-                <button
-                    className={statusSelecionado === "Todos" ? "selecionado" : ""}
-                    onClick={() => setStatusSelecionado("Todos")}
-                >
-                    Todos
-                </button>
-
-                <button
-                    className={statusSelecionado === "Ativo" ? "selecionado" : ""}
-                    onClick={() => setStatusSelecionado("Ativo")}
-                >
-                    Ativos
-                </button>
-
-                <button
-                    className={statusSelecionado === "Inativo" ? "selecionado" : ""}
-                    onClick={() => setStatusSelecionado("Inativo")}
-                >
-                    Inativos
-                </button>
 
             </div>
 
@@ -323,7 +376,7 @@ function Products() {
                     <thead>
                         <tr>
                             <th>PRODUTO</th>
-                            <th>SKU</th>
+                            <th>ID</th>
                             <th>CATEGORIA</th>
                             <th>PREÇO</th>
                             <th>ESTOQUE</th>
@@ -334,7 +387,11 @@ function Products() {
 
                     <tbody>
 
-                        {produtosFiltrados.length > 0 ? (
+                        {carregando ? (
+                            <tr>
+                                <td colSpan="7" className="products-sem-resultados">Carregando produtos...</td>
+                            </tr>
+                        ) : produtosFiltrados.length > 0 ? (
 
                             produtosFiltrados.map((produto) => (
 
@@ -359,7 +416,7 @@ function Products() {
                                         </div>
                                     </td>
 
-                                    <td>{produto.sku}</td>
+                                    <td>{produto.id_produto}</td>
 
                                     <td>{produto.categoria}</td>
 
@@ -385,7 +442,10 @@ function Products() {
                                     </td>
 
                                     <td>
-                                        -
+                                        <div className="products-item-actions">
+                                            <button type="button" onClick={() => editarProduto(produto)}>Editar</button>
+                                            <button type="button" onClick={() => desativarProduto(produto)}>Desativar</button>
+                                        </div>
                                     </td>
 
                                 </tr>
@@ -423,25 +483,27 @@ function Products() {
 
                         <div className="products-modal-cabecalho">
 
-                            <h2>NOVO PRODUTO</h2>
+                            <h2>{produtoEditando ? "EDITAR PRODUTO" : "NOVO PRODUTO"}</h2>
 
                             <button
                                 type="button"
-                                onClick={() => setModalAberto(false)}
+                                onClick={limparFormulario}
                             >
                                 ×
                             </button>
 
                         </div>
 
-                        <form onSubmit={cadastrarProduto}>
+                        {erro && <p className="text-danger" role="alert">{erro}</p>}
+
+                        <form onSubmit={salvarProduto}>
 
                             <label>Nome do produto *</label>
 
                             <input
                                 type="text"
-                                name="nome"
-                                value={novoProduto.nome}
+                                name="nome_produto"
+                                value={novoProduto.nome_produto}
                                 onChange={atualizarCampo}
                                 placeholder="Digite o nome do produto"
                                 required
@@ -451,10 +513,10 @@ function Products() {
 
                             <input
                                 type="text"
-                                name="descricao"
-                                value={novoProduto.descricao}
+                                name="localizacao"
+                                value={novoProduto.localizacao}
                                 onChange={atualizarCampo}
-                                placeholder="Descrição do produto"
+                                placeholder="Ex.: corredor A, prateleira 2"
                             />
 
                             <label>Imagem do produto</label>
@@ -463,13 +525,14 @@ function Products() {
                                 type="file"
                                 accept="image/png, image/jpeg, image/webp"
                                 onChange={selecionarImagem}
+                                ref={arquivoImagemRef}
                             />
 
-                            {novoProduto.imagem && (
+                            {imagemPreview && (
                                 <div className="products-preview-container">
 
                                     <img
-                                        src={novoProduto.imagem}
+                                        src={imagemPreview}
                                         alt="Prévia do produto"
                                         className="products-preview"
                                     />
@@ -477,12 +540,7 @@ function Products() {
                                     <button
                                         type="button"
                                         className="products-remover-imagem"
-                                        onClick={() =>
-                                            setNovoProduto((anterior) => ({
-                                                ...anterior,
-                                                imagem: ""
-                                            }))
-                                        }
+                                        onClick={removerImagem}
                                     >
                                         Remover imagem
                                     </button>
@@ -490,30 +548,19 @@ function Products() {
                                 </div>
                             )}
 
-                            <label>SKU *</label>
-
-                            <input
-                                type="text"
-                                name="sku"
-                                value={novoProduto.sku}
-                                onChange={atualizarCampo}
-                                placeholder="Ex.: PRC-INT-14900K"
-                                required
-                            />
-
                             <label>Categoria *</label>
 
                             <select
-                                name="categoria"
-                                value={novoProduto.categoria}
+                                name="id_categoria"
+                                value={novoProduto.id_categoria}
                                 onChange={atualizarCampo}
                                 required
                             >
                                 <option value="">Selecione uma categoria</option>
 
                                 {categorias.map((categoria) => (
-                                    <option key={categoria} value={categoria}>
-                                        {categoria}
+                                    <option key={categoria.id_categoria} value={categoria.id_categoria}>
+                                        {categoria.nome}
                                     </option>
                                 ))}
 
@@ -536,8 +583,8 @@ function Products() {
 
                             <input
                                 type="number"
-                                name="estoque"
-                                value={novoProduto.estoque}
+                                name="quantidade_estoque"
+                                value={novoProduto.quantidade_estoque}
                                 onChange={atualizarCampo}
                                 min="0"
                                 step="1"
@@ -545,28 +592,29 @@ function Products() {
                                 required
                             />
 
-                            <label>Status</label>
+                            <label>Estoque mínimo *</label>
 
-                            <select
-                                name="status"
-                                value={novoProduto.status}
+                            <input
+                                type="number"
+                                name="quantidade_minima"
+                                value={novoProduto.quantidade_minima}
                                 onChange={atualizarCampo}
-                            >
-                                <option value="Ativo">Ativo</option>
-                                <option value="Inativo">Inativo</option>
-                            </select>
+                                min="0"
+                                step="1"
+                                required
+                            />
 
                             <div className="products-modal-acoes">
 
                                 <button
                                     type="button"
-                                    onClick={() => setModalAberto(false)}
+                                    onClick={limparFormulario}
                                 >
                                     CANCELAR
                                 </button>
 
-                                <button type="submit">
-                                    CADASTRAR PRODUTO
+                                <button type="submit" disabled={salvando}>
+                                    {salvando ? "SALVANDO..." : produtoEditando ? "SALVAR ALTERAÇÕES" : "CADASTRAR PRODUTO"}
                                 </button>
 
                             </div>

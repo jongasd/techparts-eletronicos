@@ -1,77 +1,87 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { apiRequest } from "../../services/api";
 import "./Clients.css";
 
 function Clientes() {
-  // Controla qual tela será exibida
+  const navigate = useNavigate();
   const [tela, setTela] = useState("lista");
-
-  // Armazena os clientes cadastrados
   const [clientes, setClientes] = useState([]);
+  const [pesquisa, setPesquisa] = useState("");
+  const [formulario, setFormulario] = useState({ nome_cliente: "", cpf: "", telefone: "", email: "" });
+  const [carregando, setCarregando] = useState(true);
+  const [salvando, setSalvando] = useState(false);
+  const [erro, setErro] = useState("");
 
-  // Armazena os dados do formulário
-  const [formulario, setFormulario] = useState({
-    nome: "",
-    cpf: "",
-    telefone: "",
-    email: "",
-  });
+  useEffect(() => {
+    let montado = true;
 
-  // Armazena as tags selecionadas
-  const [tagsSelecionadas, setTagsSelecionadas] = useState([]);
+    apiRequest("/clientes")
+      .then((resposta) => {
+        if (montado) setClientes(resposta.dados || []);
+      })
+      .catch((error) => {
+        if (!montado) return;
+        setErro(error.message || "Não foi possível carregar os clientes.");
+        if (error.message.includes("Token") || error.message.includes("Sessão")) {
+          navigate("/");
+        }
+      })
+      .finally(() => {
+        if (montado) setCarregando(false);
+      });
 
-  const tags = [
-    "Vendas",
-    "Engenharia",
-    "Suporte",
-    "Logística",
-    "Administração",
-  ];
+    return () => { montado = false; };
+  }, [navigate]);
 
-  // Atualiza os campos do formulário
+  const clientesFiltrados = useMemo(() => clientes.filter((cliente) =>
+    cliente.nome_cliente.toLowerCase().includes(pesquisa.trim().toLowerCase())
+  ), [clientes, pesquisa]);
+
   function atualizarCampo(e) {
-    const { name, value } = e.target;
-
-    setFormulario({
-      ...formulario,
-      [name]: value,
-    });
+    setFormulario((anterior) => ({ ...anterior, [e.target.name]: e.target.value }));
   }
 
-  // Seleciona ou remove uma tag
-  function selecionarTag(tag) {
-    if (tagsSelecionadas.includes(tag)) {
-      setTagsSelecionadas(tagsSelecionadas.filter((item) => item !== tag));
-    } else {
-      setTagsSelecionadas([...tagsSelecionadas, tag]);
+  async function cadastrarCliente(e) {
+    e.preventDefault();
+    setErro("");
+    setSalvando(true);
+
+    try {
+      const resposta = await apiRequest("/clientes", {
+        method: "POST",
+        body: JSON.stringify({
+          nome_cliente: formulario.nome_cliente.trim(),
+          cpf: formulario.cpf.trim(),
+          telefone: formulario.telefone.trim(),
+          email: formulario.email.trim(),
+        }),
+      });
+      setClientes((anteriores) => [
+        ...anteriores,
+        { id_cliente: resposta.id, ...formulario, nome_cliente: formulario.nome_cliente.trim(), ativo: 1 },
+      ]);
+      setFormulario({ nome_cliente: "", cpf: "", telefone: "", email: "" });
+      setPesquisa("");
+      setTela("lista");
+    } catch (error) {
+      setErro(error.message || "Não foi possível cadastrar o cliente.");
+    } finally {
+      setSalvando(false);
     }
   }
 
-  // Cadastra um cliente
-  function cadastrarCliente(e) {
-    e.preventDefault();
-
-    const novoCliente = {
-      id: Date.now(),
-      ...formulario,
-      tags: tagsSelecionadas,
-    };
-
-    setClientes([...clientes, novoCliente]);
-
-    setFormulario({
-      nome: "",
-      cpf: "",
-      telefone: "",
-      email: "",
-    });
-
-    setTagsSelecionadas([]);
-    setTela("lista");
-  }
-
-  // Remove um cliente
-  function removerCliente(id) {
-    setClientes(clientes.filter((cliente) => cliente.id !== id));
+  async function removerCliente(cliente) {
+    if (!window.confirm(`Desativar o cliente ${cliente.nome_cliente}?`)) return;
+    setErro("");
+    try {
+      await apiRequest(`/clientes/${cliente.id_cliente}`, { method: "DELETE" });
+      setClientes((anteriores) => anteriores.filter(
+        (item) => item.id_cliente !== cliente.id_cliente
+      ));
+    } catch (error) {
+      setErro(error.message || "Não foi possível desativar o cliente.");
+    }
   }
 
   return (
@@ -89,18 +99,6 @@ function Clientes() {
                 <div className="clients-botoes">
                   <button
                     type="button"
-                    className="clients-btn-filtrar"
-                    onClick={() => {
-                      const campo = document.getElementById("filtro-cliente");
-
-                      campo.classList.toggle("visivel");
-                    }}
-                  >
-                    <span>☰</span> FILTRAR
-                  </button>
-
-                  <button
-                    type="button"
                     className="clients-btn-novo"
                     onClick={() => setTela("cadastro")}
                   >
@@ -110,31 +108,22 @@ function Clientes() {
               </div>
 
               {/* FILTRO */}
-              <div className="clients-filtro" id="filtro-cliente">
+              <div className="clients-filtro visivel" id="filtro-cliente">
                 <input
                   type="text"
                   placeholder="Buscar cliente por nome..."
-                  onChange={(e) => {
-                    const valor = e.target.value.toLowerCase();
-
-                    document
-                      .querySelectorAll(".clients-item")
-                      .forEach((item) => {
-                        item.style.display = item.textContent
-                          .toLowerCase()
-                          .includes(valor)
-                          ? "flex"
-                          : "none";
-                      });
-                  }}
+                  value={pesquisa}
+                  onChange={(e) => setPesquisa(e.target.value)}
                 />
               </div>
+
+              {erro && <p className="clients-erro" role="alert">{erro}</p>}
 
               {/* CONTEÚDO PRINCIPAL */}
               <div className="clients-conteudo">
                 {/* CARD PRINCIPAL */}
                 <section className="clients-card-principal">
-                  {clientes.length === 0 ? (
+                  {carregando || clientesFiltrados.length === 0 ? (
                     <div className="clients-estado-vazio">
                       <div className="clients-icone-vazio">
                         <svg
@@ -153,32 +142,29 @@ function Clientes() {
                         </svg>
                       </div>
 
-                      <h2>Base de Clientes Vazia</h2>
+                      <h2>{carregando ? "Carregando clientes..." : clientes.length ? "Nenhum cliente encontrado" : "Nenhum cliente cadastrado"}</h2>
 
-                      <p>
-                        Inicie sua gestão corporativa adicionando novos clientes
-                        ao sistema TECHPARTS ou importando planilhas externas.
-                      </p>
+                      {!carregando && !clientes.length && <p>Cadastre o primeiro cliente para começar.</p>}
                     </div>
                   ) : (
                     <div className="clients-lista">
-                      {clientes.map((cliente) => (
-                        <div className="clients-item" key={cliente.id}>
+                      {clientesFiltrados.map((cliente) => (
+                        <div className="clients-item" key={cliente.id_cliente}>
                           <div className="clients-avatar">
-                            {cliente.nome.charAt(0).toUpperCase()}
+                            {cliente.nome_cliente.charAt(0).toUpperCase()}
                           </div>
 
                           <div className="clients-info">
-                            <h3>{cliente.nome}</h3>
-                            <p>{cliente.email}</p>
-                            <span>{cliente.telefone}</span>
+                            <h3>{cliente.nome_cliente}</h3>
+                            <p>{cliente.email || `ID ${cliente.id_cliente}`}</p>
+                            <span>{[cliente.telefone, cliente.cpf].filter(Boolean).join(" · ") || "Sem dados de contato"}</span>
                           </div>
 
                           <button
                             type="button"
                             className="clients-btn-excluir"
-                            aria-label={`Excluir ${cliente.nome}`}
-                            onClick={() => removerCliente(cliente.id)}
+                            aria-label={`Desativar ${cliente.nome_cliente}`}
+                            onClick={() => removerCliente(cliente)}
                           >
                             ×
                           </button>
@@ -196,72 +182,20 @@ function Clientes() {
 
                     <div className="clients-metrica">
                       <span>Total Ativos</span>
-                      <strong>{clientes.length}</strong>
+                      <strong>{clientes.filter((cliente) => Number(cliente.ativo) === 1).length}</strong>
                     </div>
 
                     <div className="clients-metrica">
-                      <span>Novos (Mês)</span>
-
-                      <strong>
-                        {
-                          clientes.filter((cliente) => {
-                            const data = new Date(Number(cliente.id));
-
-                            const hoje = new Date();
-
-                            return (
-                              data.getMonth() === hoje.getMonth() &&
-                              data.getFullYear() === hoje.getFullYear()
-                            );
-                          }).length
-                        }
-                      </strong>
-                    </div>
-
-                    <div className="clients-metrica">
-                      <span>Inadimplência</span>
-                      <strong className="clients-inadimplencia">0%</strong>
+                      <span>Resultados</span>
+                      <strong>{clientesFiltrados.length}</strong>
                     </div>
                   </section>
 
                   {/* INSIGHTS TECH */}
                   <section className="clients-card-insights">
-                    <div className="clients-grafico">
-                      <svg viewBox="0 0 180 100" width="180">
-                        <rect
-                          x="2"
-                          y="2"
-                          width="176"
-                          height="96"
-                          rx="12"
-                          fill="none"
-                          stroke="rgba(255,255,255,0.3)"
-                        />
-
-                        {[20, 30, 40, 55, 65, 75, 90, 100].map(
-                          (altura, index) => (
-                            <rect
-                              key={index}
-                              x={18 + index * 18}
-                              y={85 - altura * 0.7}
-                              width="8"
-                              height={altura * 0.7}
-                              fill="rgba(255,255,255,0.5)"
-                              rx="2"
-                            />
-                          ),
-                        )}
-                      </svg>
-                    </div>
-
                     <div className="clients-insights-texto">
-                      <span>INSIGHTS TECH</span>
-
-                      <p>
-                        Potencialize suas vendas
-                        <br />
-                        com análise de dados.
-                      </p>
+                      <span>BASE DE CLIENTES</span>
+                      <p>{clientes.length} registros ativos no banco de dados.</p>
                     </div>
                   </section>
                 </aside>
@@ -278,120 +212,72 @@ function Clientes() {
               </div>
 
               {/* ÁREA DO CADASTRO */}
-              <div className="clients-cadastro-conteudo">
-                {/* IMAGEM DO CLIENTE */}
-                <div className="clients-imagem-area">
-                  <div className="clients-avatar-grande">
-                    <svg viewBox="0 0 180 180" width="180" height="180">
-                      <circle cx="90" cy="90" r="88" fill="#999999" />
-
-                      <circle cx="90" cy="68" r="31" fill="#f1f1f1" />
-
-                      <path
-                        d="M30 160 Q45 115 90 115 Q135 115 150 160"
-                        fill="#f1f1f1"
-                      />
-                    </svg>
-
-                    <div className="clients-icone-adicionar">+</div>
-                  </div>
-
-                  <span>Adicionar Imagem</span>
-                </div>
-
+              <div className="clients-cadastro-conteudo clients-cadastro-simples">
                 {/* FORMULÁRIO */}
                 <div className="clients-formulario-area">
                   <h2>Informações Cadastrais</h2>
 
                   <div className="clients-linha-formulario"></div>
+                  {erro && <p className="clients-erro" role="alert">{erro}</p>}
 
                   <form onSubmit={cadastrarCliente}>
                     {/* NOME */}
                     <div className="clients-campo">
-                      <label htmlFor="nome">NOME COMPLETO</label>
+                      <label htmlFor="nome-cliente">NOME COMPLETO</label>
 
                       <input
-                        id="nome"
+                        id="nome-cliente"
                         type="text"
-                        name="nome"
-                        placeholder="Nome completo"
-                        value={formulario.nome}
+                        name="nome_cliente"
+                        placeholder="Nome do cliente"
+                        value={formulario.nome_cliente}
                         onChange={atualizarCampo}
                         required
                       />
                     </div>
 
-                    {/* CPF E TELEFONE */}
                     <div className="clients-campos-duplos">
                       <div className="clients-campo">
-                        <label htmlFor="cpf">CPF</label>
-
+                        <label htmlFor="cpf-cliente">CPF</label>
                         <input
-                          id="cpf"
+                          id="cpf-cliente"
                           type="text"
                           name="cpf"
-                          placeholder="999.999.999-99"
+                          placeholder="000.000.000-00"
                           value={formulario.cpf}
                           onChange={atualizarCampo}
-                          required
                         />
                       </div>
-
                       <div className="clients-campo">
-                        <label htmlFor="telefone">TELEFONE</label>
-
+                        <label htmlFor="telefone-cliente">TELEFONE</label>
                         <input
-                          id="telefone"
+                          id="telefone-cliente"
                           type="tel"
                           name="telefone"
                           placeholder="(11) 99999-9999"
                           value={formulario.telefone}
                           onChange={atualizarCampo}
-                          required
                         />
                       </div>
                     </div>
 
-                    {/* EMAIL */}
                     <div className="clients-campo">
-                      <label htmlFor="email">E-MAIL</label>
-
+                      <label htmlFor="email-cliente">E-MAIL</label>
                       <input
-                        id="email"
+                        id="email-cliente"
                         type="email"
                         name="email"
-                        placeholder="E-mail"
+                        placeholder="cliente@exemplo.com"
                         value={formulario.email}
                         onChange={atualizarCampo}
-                        required
                       />
                     </div>
 
                     {/* BOTÃO CADASTRAR */}
-                    <button type="submit" className="clients-btn-adicionar">
-                      Adicionar Cliente
+                    <button type="submit" className="clients-btn-adicionar" disabled={salvando}>
+                      {salvando ? "Salvando..." : "Adicionar Cliente"}
                     </button>
                   </form>
-                </div>
-              </div>
-
-              {/* TAGS RÁPIDAS */}
-              <div className="clients-tags-area">
-                <strong>TAGS RÁPIDAS:</strong>
-
-                <div className="clients-tags">
-                  {tags.map((tag) => (
-                    <button
-                      key={tag}
-                      type="button"
-                      className={`clients-tag ${
-                        tagsSelecionadas.includes(tag) ? "selecionada" : ""
-                      }`}
-                      onClick={() => selecionarTag(tag)}
-                    >
-                      {tag}
-                    </button>
-                  ))}
                 </div>
               </div>
 

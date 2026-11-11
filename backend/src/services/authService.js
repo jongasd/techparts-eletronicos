@@ -77,6 +77,56 @@ const authService = {
     };
   },
 
+  buscarPerfil: async (idFuncionario) => {
+    const [rows] = await pool.query(
+      `SELECT f.id_funcionario, f.nome_funcionario, f.login, f.id_role, r.nome_role
+       FROM tbl_funcionario f
+       INNER JOIN tbl_roles r ON r.id_role = f.id_role
+       WHERE f.id_funcionario = ? AND f.ativo = 1`,
+      [idFuncionario],
+    );
+
+    if (!rows[0]) {
+      throw new AppError("Funcionário não encontrado", 404);
+    }
+
+    return rows[0];
+  },
+
+  atualizarPerfil: async (idFuncionario, { nome_funcionario, login }) => {
+    const nome = String(nome_funcionario || "").trim();
+    const loginNormalizado = String(login || "").trim();
+
+    if (!nome || !loginNormalizado) {
+      throw new AppError("Nome e login são obrigatórios", 400);
+    }
+
+    const [existentes] = await pool.query(
+      "SELECT id_funcionario FROM tbl_funcionario WHERE login = ? AND id_funcionario <> ?",
+      [loginNormalizado, idFuncionario],
+    );
+    if (existentes.length > 0) {
+      throw new AppError("Login já está em uso", 409);
+    }
+
+    try {
+      const [resultado] = await pool.query(
+        "UPDATE tbl_funcionario SET nome_funcionario = ?, login = ? WHERE id_funcionario = ? AND ativo = 1",
+        [nome, loginNormalizado, idFuncionario],
+      );
+      if (resultado.affectedRows === 0) {
+        throw new AppError("Funcionário não encontrado", 404);
+      }
+    } catch (erro) {
+      if (erro.code === "ER_DUP_ENTRY") {
+        throw new AppError("Login já está em uso", 409);
+      }
+      throw erro;
+    }
+
+    return authService.buscarPerfil(idFuncionario);
+  },
+
   registrar: async ({ nome_funcionario, login, senha, id_role }) => {
     if (!nome_funcionario || !login || !senha || !id_role) {
       throw new AppError(

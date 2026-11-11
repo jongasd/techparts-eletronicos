@@ -5,17 +5,20 @@ const executarQuery = async (sql, valores = [], conn = pool) => {
   return resultado;
 };
 
-const CAMPOS_PUBLICOS = "id_funcionario, nome_funcionario, login, ativo";
+const CAMPOS_PUBLICOS =
+  "f.id_funcionario, f.nome_funcionario, f.login, f.ativo, f.id_role, r.nome_role";
+const FROM_PUBLICO =
+  "FROM tbl_funcionario f INNER JOIN tbl_roles r ON r.id_role = f.id_role";
 
 const Funcionario = {
   findAll: () =>
     executarQuery(
-      `SELECT ${CAMPOS_PUBLICOS} FROM tbl_funcionario ORDER BY nome_funcionario ASC`,
+      `SELECT ${CAMPOS_PUBLICOS} ${FROM_PUBLICO} ORDER BY f.nome_funcionario ASC`,
     ),
 
   findById: async (id) => {
     const resultado = await executarQuery(
-      `SELECT ${CAMPOS_PUBLICOS} FROM tbl_funcionario WHERE id_funcionario = ?`,
+      `SELECT ${CAMPOS_PUBLICOS} ${FROM_PUBLICO} WHERE f.id_funcionario = ?`,
       [id],
     );
     return resultado[0] ?? null;
@@ -23,7 +26,7 @@ const Funcionario = {
 
   findByName: async (nome) => {
     const resultado = await executarQuery(
-      `SELECT ${CAMPOS_PUBLICOS} FROM tbl_funcionario WHERE nome_funcionario = ?`,
+      `SELECT ${CAMPOS_PUBLICOS} ${FROM_PUBLICO} WHERE f.nome_funcionario = ?`,
       [nome],
     );
     return resultado[0] ?? null;

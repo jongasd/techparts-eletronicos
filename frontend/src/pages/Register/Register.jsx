@@ -1,52 +1,52 @@
 import './Register.css'
 
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { useState } from 'react'
 
 import chipImage from '../../assets/chip.png'
 import chipIcon from '../../assets/chip-icon.png'
 import lockIcon from '../../assets/lock.png'
+import { apiRequest, getAuthToken } from '../../services/api'
 
 function Register() {
-    const navigate = useNavigate()
-    function voltarLogin(){
-        navigate('/')
-    }
-
     const [nome, setNome] = useState('')
-    const [email, setEmail] = useState('')
+    const [login, setLogin] = useState('')
     const [senha, setSenha] = useState('')
-    const [cpf, setCpf] = useState('')
-    const [telefone, setTelefone] = useState('')
+    const [idRole, setIdRole] = useState('3')
     const [erro, setErro] = useState('')
+    const [sucesso, setSucesso] = useState('')
     const [carregando, setCarregando] = useState(false)
 
     async function cadastrar(e) {
         e.preventDefault()
 
         setErro('')
+        setSucesso('')
+
+        if (!getAuthToken()) {
+            setErro('Entre com uma conta administradora para criar acessos de funcionários.')
+            return
+        }
+
         setCarregando(true)
-        try{
-            const resposta = await fetch(
-                'http://localhost:3000/clientes',
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        nome, email, senha, cpf, telefone
-                    })
-                }
-            )
+        try {
+            await apiRequest('/auth/registrar', {
+                method: 'POST',
+                body: JSON.stringify({
+                    nome_funcionario: nome.trim(),
+                    login: login.trim(),
+                    senha,
+                    id_role: Number(idRole)
+                })
+            })
 
-            if (!resposta.ok){
-                throw new Error('Não foi possível realizar o cadastro')
-            }
-
-            navigate('/')
+            setSucesso('Acesso de funcionário criado com sucesso.')
+            setNome('')
+            setLogin('')
+            setSenha('')
+            setIdRole('3')
         } catch (error) {
-            setErro(error.message || 'Erro ao realizar cadastro.')
+            setErro(error.message || 'Não foi possível criar o acesso.')
         } finally {
             setCarregando(false)
         }
@@ -90,7 +90,7 @@ function Register() {
                     <h2>Cadastro</h2>
 
                     <p className="register-description">
-                        Preencha os campos abaixo para criar sua conta corporativa.
+                        Crie um acesso para um funcionário. Esta ação exige uma conta administradora.
                     </p>
 
                     <form onSubmit={cadastrar}>
@@ -117,15 +117,15 @@ function Register() {
 
                         </div>
 
-                        {/* Email */}
+                        {/* Login */}
                         <div className='mb-3'>
 
                             <div className="email-label">
 
                                 <label
-                                    htmlFor="email"
+                                    htmlFor="login"
                                     className="form-label">
-                                    EMAIL
+                                    LOGIN
                                 </label>
 
                             </div>
@@ -134,9 +134,13 @@ function Register() {
 
                                 <input
                                     type="text"
-                                    id="email"
+                                    id="login"
                                     className="form-control register-input"
-                                    placeholder="joao@gmail.com" value={email} onChange={(e) => setEmail(e.target.value)} required
+                                    placeholder="Ex.: joao.silva"
+                                    value={login}
+                                    onChange={(e) => setLogin(e.target.value)}
+                                    autoComplete="username"
+                                    required
                                 />
 
                             </div>
@@ -163,7 +167,12 @@ function Register() {
                                     type="password"
                                     id="senha"
                                     className="form-control register-input"
-                                    placeholder="••••••••" value={senha} onChange={(e) => setSenha(e.target.value)} autoComplete='new-password'required
+                                    placeholder="Mínimo de 8 caracteres"
+                                    value={senha}
+                                    onChange={(e) => setSenha(e.target.value)}
+                                    autoComplete="new-password"
+                                    minLength={8}
+                                    required
                                 />
 
                                 <img
@@ -176,64 +185,50 @@ function Register() {
 
                         </div>
 
-                        {/* CPF e TEL */}
+                        {/* Perfil */}
                         <div className="mb-4">
                             <div className="name-label">
 
-                                <label htmlFor="cpf" className="form-label">
-                                    CPF
+                                <label htmlFor="perfil" className="form-label">
+                                    PERFIL
                                 </label>
 
                             </div>
 
                             <div className="input-container">
 
-                                <input
-                                    type='number'
-                                    id="cpf"
+                                <select
+                                    id="perfil"
                                     className="form-control register-input"
-                                    placeholder="000.000.000-00" value={cpf} onChange={(e) => setCpf(e.target.value)} required
-                                />
-
-                            </div>
-
-                            <div className="name-label">
-
-                                <label htmlFor="cpf" className="form-label">
-                                    TELEFONE - CELULAR
-                                </label>
-
-                            </div>
-
-                            <div className="input-container">
-
-                                <input
-                                    type="number"
-                                    id="telefone"
-                                    className="form-control register-input"
-                                    placeholder="(99)9999-9999" value={telefone} onChange={(e) => setTelefone(e.target.value)} required
-                                />
+                                    value={idRole}
+                                    onChange={(e) => setIdRole(e.target.value)}
+                                >
+                                    <option value="3">Funcionário</option>
+                                    <option value="2">Gerente</option>
+                                </select>
 
                             </div>
 
                         </div>
                     
+                        {sucesso && <p className="text-success mt-2" role="status">{sucesso}</p>}
+
                         {erro && (
-                            <p className='text-danger mt-2'>
+                            <p className='text-danger mt-2' role="alert">
                                 {erro}
                             </p>
                         )}
 
                         {/* Botão */}
                         <button className="btn register-button w-100" type='submit' disabled={carregando}>
-                            {carregando ? 'Cadastrando...' : 'Cadastrar e voltar à tela inicial'}
+                            {carregando ? 'Criando acesso...' : 'Criar acesso de funcionário'}
                         </button>
 
                         <br/>
 
                         <p className="register-text">
                             <Link to={"/"}>
-                                Cancelar cadastro
+                                Voltar ao login
                             </Link>
                         </p>
                     </form>

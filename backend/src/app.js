@@ -76,7 +76,8 @@ app.get("/health", async (req, res) => {
   try {
     await pool.query("SELECT 1");
     res.json({ status: "ok", timestamp: new Date().toISOString() });
-  } catch {
+  } catch (erro) {
+    console.error("[Healthcheck] falha na conexão com o banco:", erro.code || erro.message);
     res
       .status(503)
       .json({ status: "down", timestamp: new Date().toISOString() });

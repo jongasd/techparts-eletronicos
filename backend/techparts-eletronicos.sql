@@ -54,6 +54,9 @@ CREATE TABLE
     tbl_clientes (
         id_cliente INT NOT NULL AUTO_INCREMENT,
         nome_cliente VARCHAR(150) NOT NULL,
+        cpf VARCHAR(14) DEFAULT NULL,
+        telefone VARCHAR(20) DEFAULT NULL,
+        email VARCHAR(255) DEFAULT NULL,
         ativo TINYINT (1) NOT NULL DEFAULT 1,
         PRIMARY KEY (id_cliente)
     );

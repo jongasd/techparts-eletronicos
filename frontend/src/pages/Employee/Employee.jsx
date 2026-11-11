@@ -1,174 +1,60 @@
 
 import { useEffect, useMemo, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { apiRequest } from '../../services/api';
 
 import './Employee.css';
 
-// =========================================
-// FUNCIONÁRIOS INICIAIS
-// =========================================
-
-const funcionariosIniciais = [
-    {
-        id: 1,
-        nome: 'SOFIA MARCOLONGO DOS SANTOS',
-        departamento: 'Vendas',
-        inicial: 'S',
-        cor: '#f47700',
-        foto: null
-    },
-    {
-        id: 2,
-        nome: 'JONAS DANIEL DE BRITO LOPES',
-        departamento: 'Engenharia',
-        inicial: 'J',
-        cor: '#811da3',
-        foto: null
-    },
-    {
-        id: 3,
-        nome: 'AGATHA HELENA SILVA MONTEIRO',
-        departamento: 'Administração',
-        inicial: 'A',
-        cor: '#a54b25',
-        foto: 'https://i.pravatar.cc/150?img=37'
-    },
-    {
-        id: 4,
-        nome: 'JOÃO SILVA',
-        departamento: 'Suporte',
-        inicial: 'J',
-        cor: '#263746',
-        foto: 'https://i.pravatar.cc/150?img=12'
-    }
-];
-
-// =========================================
-// DEPARTAMENTOS
-// =========================================
-
-const departamentos = [
-    'Vendas',
-    'Engenharia',
-    'Suporte',
-    'Logística',
-    'Administração'
-];
-
 function Employee() {
-
-    // =========================================
-    // ESTADOS
-    // =========================================
-
-    const [funcionarios, setFuncionarios] = useState(
-        funcionariosIniciais
-    );
-
+    const navigate = useNavigate();
+    const [funcionarios, setFuncionarios] = useState([]);
     const [pesquisa, setPesquisa] = useState('');
     const [filtro, setFiltro] = useState('Todos');
-    const [modalAberto, setModalAberto] = useState(false);
-
-    const [novoFuncionario, setNovoFuncionario] = useState({
-        nome: '',
-        departamento: 'Vendas'
-    });
-
-    // =========================================
-    // FECHAR MODAL COM ESC
-    // =========================================
+    const [carregando, setCarregando] = useState(true);
+    const [erro, setErro] = useState('');
 
     useEffect(() => {
+        let montado = true;
 
-        if (!modalAberto) return;
+        apiRequest('/funcionarios')
+            .then((resposta) => {
+                if (montado) setFuncionarios(resposta.dados || []);
+            })
+            .catch((error) => {
+                if (!montado) return;
+                setErro(error.message || 'Não foi possível carregar os funcionários.');
+                if (error.message.includes('Token') || error.message.includes('Sessão')) {
+                    navigate('/');
+                }
+            })
+            .finally(() => {
+                if (montado) setCarregando(false);
+            });
 
-        function fecharComEsc(e) {
-            if (e.key === 'Escape') {
-                setModalAberto(false);
-            }
-        }
-
-        document.addEventListener('keydown', fecharComEsc);
-
-        return () => {
-            document.removeEventListener('keydown', fecharComEsc);
-        };
-
-    }, [modalAberto]);
-
-    // =========================================
-    // PESQUISA E FILTRAGEM
-    // =========================================
+        return () => { montado = false; };
+    }, [navigate]);
 
     const funcionariosFiltrados = useMemo(() => {
-
         return funcionarios.filter((funcionario) => {
-
-            const correspondeNome = funcionario.nome
+            const correspondeNome = funcionario.nome_funcionario
                 .toLowerCase()
                 .includes(pesquisa.trim().toLowerCase());
-
-            const correspondeDepartamento =
-                filtro === 'Todos' ||
-                funcionario.departamento === filtro;
-
-            return correspondeNome && correspondeDepartamento;
-
+            const situacao = Number(funcionario.ativo) === 1 ? 'Ativos' : 'Inativos';
+            return correspondeNome && (filtro === 'Todos' || situacao === filtro);
         });
-
     }, [funcionarios, pesquisa, filtro]);
 
-    // =========================================
-    // ATUALIZAR FORMULÁRIO
-    // =========================================
-
-    function atualizarCampo(e) {
-
-        const { name, value } = e.target;
-
-        setNovoFuncionario((atual) => ({
-            ...atual,
-            [name]: value
-        }));
-
-    }
-
-    // =========================================
-    // CADASTRAR FUNCIONÁRIO
-    // =========================================
-
-    function cadastrarFuncionario(e) {
-
-        e.preventDefault();
-
-        const nome = novoFuncionario.nome.trim();
-
-        if (!nome) {
-            return;
+    async function desativarFuncionario(funcionario) {
+        if (!window.confirm(`Desativar o acesso de ${funcionario.nome_funcionario}?`)) return;
+        setErro('');
+        try {
+            await apiRequest(`/funcionarios/${funcionario.id_funcionario}`, { method: 'DELETE' });
+            setFuncionarios((anteriores) => anteriores.map((item) =>
+                item.id_funcionario === funcionario.id_funcionario ? { ...item, ativo: 0 } : item
+            ));
+        } catch (error) {
+            setErro(error.message || 'Não foi possível desativar o funcionário.');
         }
-
-        const novo = {
-            id: Date.now(),
-            nome: nome.toUpperCase(),
-            departamento: novoFuncionario.departamento,
-            inicial: nome.charAt(0).toUpperCase(),
-            cor: '#24577d',
-            foto: null
-        };
-
-        setFuncionarios((atual) => [...atual, novo]);
-
-        setNovoFuncionario({
-            nome: '',
-            departamento: 'Vendas'
-        });
-
-        // Limpa a pesquisa e o filtro para facilitar
-        // a visualização do funcionário recém-cadastrado.
-        setPesquisa('');
-        setFiltro('Todos');
-
-        setModalAberto(false);
-
     }
 
     // =========================================
@@ -180,7 +66,9 @@ function Employee() {
         const cabecalho = [
             'ID',
             'Nome',
-            'Departamento'
+            'Login',
+            'Perfil',
+            'Situação'
         ];
 
         // Escapa aspas e envolve os valores em aspas.
@@ -189,9 +77,11 @@ function Employee() {
         }
 
         const linhas = funcionariosFiltrados.map((funcionario) => [
-            funcionario.id,
-            funcionario.nome,
-            funcionario.departamento
+            funcionario.id_funcionario,
+            funcionario.nome_funcionario,
+            funcionario.login,
+            funcionario.nome_role,
+            Number(funcionario.ativo) === 1 ? 'Ativo' : 'Inativo'
         ]);
 
         const conteudo = [
@@ -252,18 +142,15 @@ function Employee() {
                         EXPORTAR RELATÓRIO
                     </button>
 
-                    <button
-                        type="button"
-                        className="btn-novo-funcionario"
-                        onClick={() => setModalAberto(true)}
-                    >
-                        <span aria-hidden="true">＋</span>
-                        NOVO FUNCIONÁRIO
-                    </button>
+                    <Link to="/register" className="btn-novo-funcionario">
+                        CRIAR ACESSO
+                    </Link>
 
                 </div>
 
             </div>
+
+            {erro && <p className="funcionarios-erro" role="alert">{erro}</p>}
 
             {/* PESQUISA */}
 
@@ -283,13 +170,15 @@ function Employee() {
 
             <section className="funcionarios-grid">
 
-                {funcionariosFiltrados.length > 0 ? (
+                {carregando ? (
+                    <div className="nenhum-funcionario">Carregando funcionários...</div>
+                ) : funcionariosFiltrados.length > 0 ? (
 
                     funcionariosFiltrados.map((funcionario) => (
 
                         <article
                             className="funcionario-card"
-                            key={funcionario.id}
+                            key={funcionario.id_funcionario}
                         >
 
                             <div
@@ -299,28 +188,31 @@ function Employee() {
                                 }}
                             >
 
-                                {funcionario.foto ? (
-
-                                    <img
-                                        src={funcionario.foto}
-                                        alt={`Foto de ${funcionario.nome}`}
-                                    />
-
-                                ) : (
-
-                                    <span>
-                                        {funcionario.inicial}
-                                    </span>
-
-                                )}
+                                <span>{funcionario.nome_funcionario.charAt(0).toUpperCase()}</span>
 
                             </div>
 
-                            <h3>{funcionario.nome}</h3>
+                            <h3>{funcionario.nome_funcionario}</h3>
+
+                            <p>{funcionario.login}</p>
 
                             <span className="departamento-tag">
-                                {funcionario.departamento}
+                                {funcionario.nome_role}
                             </span>
+
+                            <span className={`funcionario-situacao ${Number(funcionario.ativo) === 1 ? 'ativo' : 'inativo'}`}>
+                                {Number(funcionario.ativo) === 1 ? 'Ativo' : 'Inativo'}
+                            </span>
+
+                            {Number(funcionario.ativo) === 1 && (
+                                <button
+                                    type="button"
+                                    className="btn-desativar-funcionario"
+                                    onClick={() => desativarFuncionario(funcionario)}
+                                >
+                                    Desativar acesso
+                                </button>
+                            )}
 
                         </article>
 
@@ -352,129 +244,22 @@ function Employee() {
                     Todos
                 </button>
 
-                {departamentos.map((departamento) => (
+                {['Ativos', 'Inativos'].map((situacao) => (
 
                     <button
-                        key={departamento}
+                        key={situacao}
                         type="button"
                         className={`tag-botao ${
-                            filtro === departamento ? 'ativa' : ''
+                            filtro === situacao ? 'ativa' : ''
                         }`}
-                        onClick={() => setFiltro(departamento)}
+                        onClick={() => setFiltro(situacao)}
                     >
-                        {departamento}
+                        {situacao}
                     </button>
 
                 ))}
 
             </section>
-
-            {/* MODAL DE CADASTRO */}
-
-            {modalAberto && (
-
-                <div
-                    className="modal-overlay"
-                    onClick={() => setModalAberto(false)}
-                >
-
-                    <div
-                        className="modal-funcionario"
-                        role="dialog"
-                        aria-modal="true"
-                        aria-labelledby="titulo-modal"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-
-                        <div className="modal-cabecalho">
-
-                            <h2 id="titulo-modal">
-                                NOVO FUNCIONÁRIO
-                            </h2>
-
-                            <button
-                                type="button"
-                                aria-label="Fechar cadastro"
-                                onClick={() => setModalAberto(false)}
-                            >
-                                ×
-                            </button>
-
-                        </div>
-
-                        <form onSubmit={cadastrarFuncionario}>
-
-                            {/* NOME */}
-
-                            <label htmlFor="nome-funcionario">
-                                Nome completo
-                            </label>
-
-                            <input
-                                id="nome-funcionario"
-                                type="text"
-                                name="nome"
-                                placeholder="Digite o nome do funcionário"
-                                value={novoFuncionario.nome}
-                                onChange={atualizarCampo}
-                                autoFocus
-                                required
-                            />
-
-                            {/* DEPARTAMENTO */}
-
-                            <label htmlFor="departamento">
-                                Departamento
-                            </label>
-
-                            <select
-                                id="departamento"
-                                name="departamento"
-                                value={novoFuncionario.departamento}
-                                onChange={atualizarCampo}
-                            >
-
-                                {departamentos.map((departamento) => (
-
-                                    <option
-                                        key={departamento}
-                                        value={departamento}
-                                    >
-                                        {departamento}
-                                    </option>
-
-                                ))}
-
-                            </select>
-
-                            {/* BOTÕES */}
-
-                            <div className="modal-botoes">
-
-                                <button
-                                    type="button"
-                                    className="btn-cancelar"
-                                    onClick={() => setModalAberto(false)}
-                                >
-                                    CANCELAR
-                                </button>
-
-                                <button
-                                    type="submit"
-                                    className="btn-salvar"
-                                >
-                                    CADASTRAR
-                                </button>
-
-                            </div>
-
-                        </form>
-
-                    </div>
-
-                </div>
-
-            )}
 
         </main>
     );

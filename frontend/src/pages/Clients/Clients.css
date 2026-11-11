@@ -366,6 +366,20 @@
     margin: 0 auto;
 }
 
+.clients-cadastro-simples {
+    grid-template-columns: minmax(0, 680px);
+    justify-content: center;
+}
+
+.clients-cadastro-simples .clients-formulario-area {
+    max-width: none;
+}
+
+.clients-erro {
+    margin: 0 0 16px;
+    color: #b42318;
+}
+
 /* =========================================
    IMAGEM DE PERFIL
 ========================================= */
