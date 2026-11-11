@@ -306,3 +306,44 @@
         gap: 18px;
     }
 }
+
+
+/* =========================
+   CAMPOS EDITÁVEIS
+========================= */
+
+.campo-editavel {
+    background-color: #ffffff !important;
+    border: 1px solid #b7cbd9 !important;
+    color: #263746 !important;
+    cursor: text;
+    transition: 0.2s ease;
+}
+
+.campo-editavel:hover {
+    border-color: #8baec8 !important;
+}
+
+.campo-editavel:focus {
+    background-color: #ffffff !important;
+    border-color: #1766a2 !important;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(23, 102, 162, 0.13) !important;
+}
+
+/* =========================
+   CAMPOS NÃO EDITÁVEIS
+========================= */
+
+.campo-bloqueado {
+    background-color: #e9edf1 !important;
+    border: 1px solid #dce2e7 !important;
+    color: #7b8792 !important;
+    cursor: not-allowed;
+    box-shadow: none !important;
+}
+
+.campo-bloqueado:focus {
+    outline: none;
+    box-shadow: none !important;
+}

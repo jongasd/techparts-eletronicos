@@ -1,6 +1,7 @@
 import './Login.css'
 
 import { Link, useNavigate } from 'react-router-dom'
+import { useState } from 'react';
 
 import icones from '../../assets/icones' 
 
@@ -8,6 +9,7 @@ import chipImage from '../../assets/chip.png'
 
 function Login() {
     const navigate = useNavigate()
+    const [mostrarSenha, setMostrarSenha] = useState(false);
     
     function irHome(){
         navigate('/home')
@@ -81,43 +83,48 @@ function Login() {
 
                     </div>
 
+                    
                     {/* Senha */}
                     <div className="mb-3">
 
                         <div className="password-label">
-
                             <label
                                 htmlFor="senha"
                                 className="form-label"
                             >
                                 SENHA
                             </label>
-
                         </div>
 
                         <div className="input-container">
 
                             <input
-                                type="password"
+                                type={mostrarSenha ? "text" : "password"}
                                 id="senha"
                                 className="form-control login-input"
                                 placeholder="••••••••"
                             />
 
-                            <img
-                                src={icones.visibilidade}
-                                alt=""
-                                className="input-icon"
-                            />
-
-                            <Link
-                                to="/recuperar-senha"
-                                className="forgot-password"
+                            <button
+                                type="button"
+                                className="password-toggle"
+                                onClick={() => setMostrarSenha(!mostrarSenha)}
+                                aria-label={mostrarSenha ? "Ocultar senha" : "Mostrar senha"}
                             >
-                                Esqueceu a senha?
-                            </Link>
+                                <img
+                                    src={icones.visibilidade}
+                                    alt=""
+                                />
+                            </button>
 
                         </div>
+
+                        <Link
+                            to="/recuperar-senha"
+                            className="forgot-password"
+                        >
+                            Esqueceu a senha?
+                        </Link>
 
                     </div>
 

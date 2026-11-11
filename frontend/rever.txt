@@ -39,15 +39,11 @@ problemas techparts front
 
 problemas techparts front   
 
-Login - ajustar visibilidade da senha ao clicar no olho + ajustar posição do olho
+Login e Cadastro - logo não fica centralizada no retângulo azul quando a tela é menor
 
-Login e Cadastro - logo não fica centralizada no retângulo azul quando a tela é menor; adicionar parte do "esqueceu a senha?"
+Cadastro - a "Barra" divisora da esquerda fica maior
 
-Cadastro - a "Barra" divisora da esquerda fica maior; colocar limite de dígitos no cpf e no telefone; não deixar números negativos; não deixar adicionar + ou -; tirar as setas que aparecem para aumentar ou diminuir o número, @ obrigatorio no campo gmail
-
-Perfil - permitir apenas número no telefone, diferenciar mais campos que podem e não podem ser alterados
-
-Layout - adicionar confirmação de encerrar sessão e abrir perfil quando clicar em perfil, arrumar responsividade do tablet-sidebar, centralizar textos do footer quando a tela for pequena
+Layout - adicionar confirmação de encerrar sessão e abrir perfil quando clicar em perfil, arrumar responsividade do tablet-sidebar, centralizar textos do footer quando a tela for pequena.
 
 
 Sistema - ver o que o botão "configurar" deveria mostrar e implementar função calendário em "agendar verificação", gráfico no "Desempenho Global do Sistema"
@@ -66,7 +62,7 @@ Dashboard - colocar título dashboard
 
 Funcionários - diminuir botões (padronizar com telas anteriores - Agatha), alterar cor de "exportar relatório", ao comprimir a página impedir que a fonte de "Funcionários" diminua
 
-
+ADICIONAIS: implementar Vlibras e QR Code
 
 
 

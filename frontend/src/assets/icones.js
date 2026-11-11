@@ -27,6 +27,7 @@ import dinheiro from './money-icon.png';
 import repor from './reload-icon.png';
 import excluir from './trash-icon.png';
 import editar from './edit-icon.png';
+import visibilidade from './visibility-icon.png';
 
 const icones = {
     usuario,
@@ -52,7 +53,8 @@ const icones = {
     dinheiro,
     repor,
     excluir,
-    editar
+    editar,
+    visibilidade
 };
 
 export default icones;

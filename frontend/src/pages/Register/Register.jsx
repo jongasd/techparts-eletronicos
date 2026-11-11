@@ -7,6 +7,60 @@ import chipImage from '../../assets/chip.png'
 import chipIcon from '../../assets/chip-icon.png'
 import lockIcon from '../../assets/lock.png'
 
+
+// Formata o CPF: 000.000.000-00
+function formatarCPF(valor) {
+    const numeros = valor.replace(/\D/g, '').slice(0, 11);
+
+    let formatado = numeros;
+
+    if (numeros.length > 3) {
+        formatado = numeros.slice(0, 3) + '.' + numeros.slice(3);
+    }
+
+    if (numeros.length > 6) {
+        formatado = numeros.slice(0, 3) + '.' +
+                    numeros.slice(3, 6) + '.' +
+                    numeros.slice(6);
+    }
+
+    if (numeros.length > 9) {
+        formatado = numeros.slice(0, 3) + '.' +
+                    numeros.slice(3, 6) + '.' +
+                    numeros.slice(6, 9) + '-' +
+                    numeros.slice(9);
+    }
+
+    return formatado;
+}
+
+
+// Formata o telefone: (00) 00000-0000
+function formatarTelefone(valor) {
+    const numeros = valor.replace(/\D/g, '').slice(0, 11);
+
+    if (numeros.length <= 2) {
+        return numeros.length ? `(${numeros}` : '';
+    }
+
+    const ddd = numeros.slice(0, 2);
+    const numero = numeros.slice(2);
+
+    if (numeros.length <= 10) {
+        if (numero.length <= 4) {
+            return `(${ddd}) ${numero}`;
+        }
+
+        return `(${ddd}) ${numero.slice(0, 4)}-${numero.slice(4)}`;
+    }
+
+    if (numero.length <= 5) {
+        return `(${ddd}) ${numero}`;
+    }
+
+    return `(${ddd}) ${numero.slice(0, 5)}-${numero.slice(5)}`;
+}
+
 function Register() {
     const navigate = useNavigate()
     function voltarLogin(){
@@ -21,12 +75,28 @@ function Register() {
     const [erro, setErro] = useState('')
     const [carregando, setCarregando] = useState(false)
 
+    
     async function cadastrar(e) {
-        e.preventDefault()
+        e.preventDefault();
 
-        setErro('')
-        setCarregando(true)
-        try{
+        setErro('');
+
+        const cpfNumeros = cpf.replace(/\D/g, '');
+        const telefoneNumeros = telefone.replace(/\D/g, '');
+
+        if (cpfNumeros.length !== 11) {
+            setErro('O CPF deve conter exatamente 11 números.');
+            return;
+        }
+
+        if (telefoneNumeros.length !== 11) {
+            setErro('O telefone deve conter exatamente 11 números.');
+            return;
+        }
+
+        setCarregando(true);
+
+        try {
             const resposta = await fetch(
                 'http://localhost:3000/clientes',
                 {
@@ -35,22 +105,29 @@ function Register() {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        nome, email, senha, cpf, telefone
+                        nome,
+                        email,
+                        senha,
+                        cpf: cpfNumeros,
+                        telefone: telefoneNumeros
                     })
                 }
-            )
+            );
 
-            if (!resposta.ok){
-                throw new Error('Não foi possível realizar o cadastro')
+            if (!resposta.ok) {
+                throw new Error('Não foi possível realizar o cadastro');
             }
 
-            navigate('/')
+            navigate('/');
+
         } catch (error) {
-            setErro(error.message || 'Erro ao realizar cadastro.')
+            setErro(error.message || 'Erro ao realizar cadastro.');
+
         } finally {
-            setCarregando(false)
+            setCarregando(false);
         }
     }
+
 
     return (
         <div className="register-page">
@@ -131,12 +208,16 @@ function Register() {
                             </div>
 
                             <div className="input-container">
-
+                                
                                 <input
-                                    type="text"
+                                    type="email"
                                     id="email"
                                     className="form-control register-input"
-                                    placeholder="joao@gmail.com" value={email} onChange={(e) => setEmail(e.target.value)} required
+                                    placeholder="joao@gmail.com"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    autoComplete="email"
+                                    required
                                 />
 
                             </div>
@@ -188,31 +269,42 @@ function Register() {
 
                             <div className="input-container">
 
+                                
                                 <input
-                                    type='number'
+                                    type="text"
                                     id="cpf"
                                     className="form-control register-input"
-                                    placeholder="000.000.000-00" value={cpf} onChange={(e) => setCpf(e.target.value)} required
+                                    placeholder="000.000.000-00"
+                                    value={cpf}
+                                    onChange={(e) => setCpf(formatarCPF(e.target.value))}
+                                    inputMode="numeric"
+                                    maxLength={14}
+                                    required
                                 />
 
                             </div>
 
-                            <div className="name-label">
+                            <div className="phone-field">
 
-                                <label htmlFor="cpf" className="form-label">
-                                    TELEFONE - CELULAR
-                                </label>
+                                <div className="name-label">
+                                    <label htmlFor="telefone" className="form-label">
+                                        TELEFONE - CELULAR
+                                    </label>
+                                </div>
 
-                            </div>
-
-                            <div className="input-container">
-
-                                <input
-                                    type="number"
-                                    id="telefone"
-                                    className="form-control register-input"
-                                    placeholder="(99)9999-9999" value={telefone} onChange={(e) => setTelefone(e.target.value)} required
-                                />
+                                <div className="input-container">
+                                    <input
+                                        type="text"
+                                        id="telefone"
+                                        className="form-control register-input"
+                                        placeholder="(99) 99999-9999"
+                                        value={telefone}
+                                        onChange={(e) => setTelefone(formatarTelefone(e.target.value))}
+                                        inputMode="numeric"
+                                        maxLength={15}
+                                        required
+                                    />
+                                </div>
 
                             </div>
 

@@ -534,3 +534,13 @@
         gap: 15px;
     }
 }
+
+/* ESPAÇAMENTO ENTRE CPF E TELEFONE */
+
+.phone-field {
+    margin-top: 20px;
+}
+
+.phone-field .form-label {
+    margin-bottom: 8px;
+}

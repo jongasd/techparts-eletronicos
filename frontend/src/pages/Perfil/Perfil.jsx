@@ -7,6 +7,36 @@ import perfilIcon from '../../assets/pfp-icon.png';
 import notificacoesIcon from '../../assets/notification-icon.png';
 import ajudaIcon from '../../assets/help-icon.png';
 
+
+function formatarTelefone(valor) {
+    const numeros = valor.replace(/\D/g, '').slice(0, 11);
+
+    if (numeros.length === 0) return '';
+
+    if (numeros.length <= 2) {
+        return `(${numeros}`;
+    }
+
+    const ddd = numeros.slice(0, 2);
+    const restante = numeros.slice(2);
+
+    // Celular: (11) 98765-4321
+    if (numeros.length > 10) {
+        if (restante.length <= 5) {
+            return `(${ddd}) ${restante}`;
+        }
+
+        return `(${ddd}) ${restante.slice(0, 5)}-${restante.slice(5)}`;
+    }
+
+    // Telefone fixo: (11) 2345-6789
+    if (restante.length <= 4) {
+        return `(${ddd}) ${restante}`;
+    }
+
+    return `(${ddd}) ${restante.slice(0, 4)}-${restante.slice(4)}`;
+}
+
 function Perfil() {
     const navigate = useNavigate();
     const inputFoto = useRef(null);
@@ -21,15 +51,21 @@ function Perfil() {
         cpf: '123.456.789-00',
         funcao: 'Administrador de Infraestrutura',
     });
-
+    
     function atualizarCampo(e) {
         const { name, value } = e.target;
 
+        const valorFinal =
+            name === 'telefone'
+                ? formatarTelefone(value)
+                : value;
+
         setDados((dadosAtuais) => ({
             ...dadosAtuais,
-            [name]: value,
+            [name]: valorFinal,
         }));
     }
+
 
     function selecionarFoto(e) {
         const arquivo = e.target.files?.[0];
@@ -53,20 +89,48 @@ function Perfil() {
         }
     }
 
+    
     async function salvarAlteracoes(e) {
         e.preventDefault();
 
-        // Aqui você enviará email e telefone para a API.
-        // A foto também precisará ser enviada ao servidor
-        // para continuar disponível após recarregar a página.
+        // Remove a formatação do telefone
+        const telefoneSemFormatacao = dados.telefone.replace(/\D/g, '');
 
-        console.log('Dados editáveis:', {
-            email: dados.email,
-            telefone: dados.telefone,
-        });
+        try {
+            // Requisição para atualizar os dados do usuário
+            const resposta = await fetch(
+                'http://localhost:3000/clientes/ID_DO_USUARIO',
+                {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: dados.email,
+                        telefone: telefoneSemFormatacao
+                    })
+                }
+            );
 
-        alert('Exemplo visual: conecte esta ação à sua API.');
+            // Verifica se a requisição foi realizada corretamente
+            if (!resposta.ok) {
+                throw new Error('Não foi possível atualizar o perfil.');
+            }
+
+            // Converte a resposta da API para JSON
+            const resultado = await resposta.json();
+
+            console.log('Perfil atualizado:', resultado);
+
+            alert('Perfil atualizado com sucesso!');
+
+        } catch (error) {
+            console.error('Erro:', error);
+
+            alert(error.message);
+        }
     }
+
 
     return (
         <div className="perfil-page">
@@ -142,6 +206,7 @@ function Perfil() {
                                 name="nome"
                                 value={dados.nome}
                                 readOnly
+                                className="campo-bloqueado"
                             />
                         </div>
 
@@ -155,20 +220,26 @@ function Perfil() {
                                     value={dados.email}
                                     onChange={atualizarCampo}
                                     required
+                                    className="campo-editavel"
                                 />
-                            </div>
-
+                            </div>     
+                            
                             <div className="campo">
                                 <label htmlFor="telefone">TELEFONE</label>
+
                                 <input
                                     id="telefone"
                                     name="telefone"
                                     type="tel"
+                                    inputMode="numeric"
+                                    maxLength={15}
                                     value={dados.telefone}
                                     onChange={atualizarCampo}
+                                    className="campo-editavel"
                                     required
                                 />
                             </div>
+
                         </div>
 
                         <div className="campos-duplos">
@@ -179,6 +250,7 @@ function Perfil() {
                                     name="cpf"
                                     value={dados.cpf}
                                     readOnly
+                                    className="campo-bloqueado"
                                 />
                             </div>
 
@@ -190,6 +262,7 @@ function Perfil() {
                                     value={dados.funcao}
                                     readOnly
                                     rows={2}
+                                    className="campo-bloqueado"
                                 />
                             </div>
                         </div>
