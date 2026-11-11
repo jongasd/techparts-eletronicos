@@ -5,6 +5,7 @@ const {
   parseNumero,
   validarCamposObrigatorios,
 } = require("../utils/validadores");
+const { salvarImagem, removerArquivoImagem } = require("../utils/imagem");
 
 const CAMPOS_OBRIGATORIOS_CRIACAO = [
   "id_categoria",
@@ -66,7 +67,8 @@ const produtoService = {
     return produto;
   },
 
-  criar: async (body) => {
+  // arquivo: objeto do multer (req.file) com .buffer, ou undefined.
+  criar: async (body, arquivo) => {
     validarCamposObrigatorios(body, CAMPOS_OBRIGATORIOS_CRIACAO);
 
     const ativo = body.ativo === undefined ? 1 : Number(body.ativo);
@@ -90,10 +92,21 @@ const produtoService = {
       ativo,
     };
 
-    return await Produto.create(dados);
+    // Toda a validação dos campos acima já passou: só agora o arquivo vai ao disco.
+    if (!arquivo) {
+      return await Produto.create(dados);
+    }
+
+    const nomeArquivo = await salvarImagem(arquivo.buffer);
+    try {
+      return await Produto.create({ ...dados, imagem: nomeArquivo });
+    } catch (erro) {
+      await removerArquivoImagem(nomeArquivo); // não deixa arquivo órfão
+      throw erro;
+    }
   },
 
-  atualizar: async (id, body) => {
+  atualizar: async (id, body, arquivo) => {
     const idValido = parseId(id);
 
     const produto = await Produto.findById(idValido);
@@ -103,11 +116,39 @@ const produtoService = {
 
     const dadosAtualizados = extrairCamposAtualizaveis(body);
 
-    if (Object.keys(dadosAtualizados).length === 0) {
+    if (Object.keys(dadosAtualizados).length === 0 && !arquivo) {
       throw new AppError("Nenhum campo válido informado para atualização", 400);
     }
 
-    await Produto.update(idValido, dadosAtualizados);
+    if (!arquivo) {
+      await Produto.update(idValido, dadosAtualizados);
+      return;
+    }
+
+    const novoNome = await salvarImagem(arquivo.buffer);
+    try {
+      await Produto.update(idValido, { ...dadosAtualizados, imagem: novoNome });
+    } catch (erro) {
+      await removerArquivoImagem(novoNome);
+      throw erro;
+    }
+    // só apaga a antiga depois que o banco já aponta para a nova
+    await removerArquivoImagem(produto.imagem);
+  },
+
+  removerImagem: async (id) => {
+    const idValido = parseId(id);
+
+    const produto = await Produto.findById(idValido);
+    if (!produto) {
+      throw new AppError("Produto não encontrado", 404);
+    }
+    if (!produto.imagem) {
+      throw new AppError("Produto não possui imagem", 404);
+    }
+
+    await Produto.update(idValido, { imagem: null });
+    await removerArquivoImagem(produto.imagem);
   },
 
   desativar: async (id) => {

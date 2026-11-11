@@ -17,6 +17,7 @@ API REST para gerenciamento de estoque e vendas de uma loja de eletrônicos: pro
 - MySQL via `mysql2` (queries manuais com pool, sem ORM)
 - JWT (`jsonwebtoken`) + `bcrypt`
 - Jest para testes
+- `multer` para upload de imagens de produtos
 - CORS + dotenv
 
 ## Estrutura
@@ -38,8 +39,10 @@ src/
 │   └── errorHandle.js       # tratamento centralizado de erros
 └── utils/
     └── appError.js          # classe de erro customizada
-migrations/
-└── 002_pdv.sql              # tabelas, colunas e permissões do PDV
+src/migrations/
+├── 002_pdv.sql              # tabelas, colunas e permissões do PDV
+├── 003_auditoria.sql        # log de auditoria
+└── 004_produto_imagem.sql   # coluna tbl_produtos.imagem
 __test__/services/           # testes unitários dos services
 ```
 
@@ -57,6 +60,9 @@ Crie um arquivo `.env` na raiz do backend (ele não deve ser versionado):
 | `JWT_SECRET` | sim | segredo usado para assinar os tokens; use um valor longo e aleatório |
 | `JWT_EXPIRES_IN` | não | validade do token (padrão `8h`) |
 | `PORT` | não | porta da API (padrão `3000`) |
+| `UPLOAD_DIR` | **em produção, sim** | pasta das imagens de produtos. Aponte para um volume persistente; o padrão (`./uploads`) é apagado a cada deploy em plataformas de disco efêmero |
+| `UPLOAD_MAX_MB` | não | tamanho máximo por imagem (padrão `2`) |
+| `PUBLIC_API_URL` | não | URL pública da API, usada para montar `imagem_url` (sem barra final). Vazio = URL relativa |
 
 ## Instalação e execução
 
@@ -68,7 +74,11 @@ npm install
 mysql -u seu_usuario -p < techparts-eletronicos.sql
 
 # 3. aplicar a migração do PDV (uma única vez)
-mysql -u seu_usuario -p < migrations/002_pdv.sql
+mysql -u seu_usuario -p db_techparts < src/migrations/002_pdv.sql
+
+# 3.1 auditoria e imagem de produto (004 é idempotente; sem cliente mysql, use: node src/migrarImagemProdutos.js)
+mysql -u seu_usuario -p db_techparts < src/migrations/003_auditoria.sql
+mysql -u seu_usuario -p db_techparts < src/migrations/004_produto_imagem.sql
 
 # 4. subir o servidor
 node src/server.js
@@ -121,6 +131,33 @@ DELETE /<recurso>/:id   # exclui             (<recurso>:excluir)
 | Saídas | `/saidas` | itens: `id_produto` e `quantidade`; baixa de estoque e de lote em transação; editar itens e excluir estão desabilitados (501) |
 | Ajustes | `/ajustes` | só `GET` e `POST` funcionam; `PUT` e `DELETE` retornam 501. `tipo_ajuste` (`entrada`, `saida`, `correcao`) deve ser coerente com o sinal de `quantidade_ajustada` |
 | Devoluções | `/devolucoes` | só `GET` e `POST` |
+
+### Imagem do produto
+
+`POST /produtos` e `PUT /produtos/:id` aceitam `multipart/form-data` com o campo opcional **`imagem`** (JPG, PNG ou WebP, até `UPLOAD_MAX_MB`). Os demais campos vão como campos de texto do formulário. JSON puro continua funcionando para quem não envia imagem.
+
+```js
+const fd = new FormData();
+fd.append("nome_produto", "Resistor 10k");
+fd.append("id_categoria", 1);
+fd.append("quantidade_estoque", 0);
+fd.append("quantidade_minima", 5);
+fd.append("preco", "0.25");
+fd.append("imagem", arquivo);                 // File do <input type="file">
+fetch(`${API}/produtos`, { method: "POST", headers: { Authorization: `Bearer ${token}` }, body: fd });
+// NÃO defina Content-Type manualmente: o navegador inclui o boundary.
+```
+
+| Método | Rota | Permissão | Descrição |
+|---|---|---|---|
+| `POST` | `/produtos` | `produtos:criar` | cria o produto; `imagem` opcional |
+| `PUT` | `/produtos/:id` | `produtos:editar` | atualiza campos e/ou troca a imagem (a antiga é apagada); só `imagem` já basta |
+| `DELETE` | `/produtos/:id/imagem` | `produtos:editar` | remove a imagem (404 se não tiver) |
+| `GET` | `/uploads/produtos/<arquivo>` | pública | serve o arquivo (`<img src>` não envia token; os nomes são UUIDs) |
+
+As respostas de `GET /produtos` e `GET /produtos/:id` trazem `imagem` (nome do arquivo) e `imagem_url`. O tipo é validado pelo **conteúdo** do arquivo, não pelo mimetype informado pelo cliente; SVG é recusado de propósito (pode conter script). Erros: `415` formato inválido, `413` acima do limite, `400` campo com nome errado.
+
+**Deploy:** rode a migration `004` **antes** de publicar esta versão (o `SELECT` de produtos passa a ler a coluna `imagem`). Em plataformas com disco efêmero (Render, Railway, Fly, Heroku) monte um volume e defina `UPLOAD_DIR`; sem isso as imagens somem a cada deploy. Atrás de Nginx, ajuste `client_max_body_size` (o padrão é 1 MB). Com mais de uma instância da API, use storage compartilhado (S3/Cloudinary) em vez de disco local.
 
 ### Lotes
 
@@ -194,7 +231,7 @@ Exige `dashboard:visualizar`.
 
 ## Modelo de dados
 
-Schema em `techparts-eletronicos.sql`, com as extensões do PDV em `migrations/002_pdv.sql`:
+Schema em `techparts-eletronicos.sql`, com as extensões do PDV em `src/migrations/002_pdv.sql`:
 
 | Tabela | Descrição |
 |---|---|
