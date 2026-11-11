@@ -1,10 +1,11 @@
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+
 import './Employee.css';
 
-import Header from '../../components/Header/Header';
-import Footer from '../../components/Footer/Footer';
-import Sidebar from '../../components/Sidebar/Sidebar';
+// =========================================
+// FUNCIONÁRIOS INICIAIS
+// =========================================
 
 const funcionariosIniciais = [
     {
@@ -41,6 +42,10 @@ const funcionariosIniciais = [
     }
 ];
 
+// =========================================
+// DEPARTAMENTOS
+// =========================================
+
 const departamentos = [
     'Vendas',
     'Engenharia',
@@ -50,8 +55,10 @@ const departamentos = [
 ];
 
 function Employee() {
-     // Controla a abertura e o fechamento da Sidebar
-    const [menuAberto, setMenuAberto] = useState(true);
+
+    // =========================================
+    // ESTADOS
+    // =========================================
 
     const [funcionarios, setFuncionarios] = useState(
         funcionariosIniciais
@@ -66,34 +73,84 @@ function Employee() {
         departamento: 'Vendas'
     });
 
-    // Pesquisa e filtragem dos funcionários
+    // =========================================
+    // FECHAR MODAL COM ESC
+    // =========================================
+
+    useEffect(() => {
+
+        if (!modalAberto) return;
+
+        function fecharComEsc(e) {
+            if (e.key === 'Escape') {
+                setModalAberto(false);
+            }
+        }
+
+        document.addEventListener('keydown', fecharComEsc);
+
+        return () => {
+            document.removeEventListener('keydown', fecharComEsc);
+        };
+
+    }, [modalAberto]);
+
+    // =========================================
+    // PESQUISA E FILTRAGEM
+    // =========================================
+
     const funcionariosFiltrados = useMemo(() => {
+
         return funcionarios.filter((funcionario) => {
+
             const correspondeNome = funcionario.nome
                 .toLowerCase()
-                .includes(pesquisa.toLowerCase());
+                .includes(pesquisa.trim().toLowerCase());
 
             const correspondeDepartamento =
                 filtro === 'Todos' ||
                 funcionario.departamento === filtro;
 
             return correspondeNome && correspondeDepartamento;
+
         });
+
     }, [funcionarios, pesquisa, filtro]);
 
-    // Cadastro de funcionário
+    // =========================================
+    // ATUALIZAR FORMULÁRIO
+    // =========================================
+
+    function atualizarCampo(e) {
+
+        const { name, value } = e.target;
+
+        setNovoFuncionario((atual) => ({
+            ...atual,
+            [name]: value
+        }));
+
+    }
+
+    // =========================================
+    // CADASTRAR FUNCIONÁRIO
+    // =========================================
+
     function cadastrarFuncionario(e) {
+
         e.preventDefault();
 
-        if (!novoFuncionario.nome.trim()) {
+        const nome = novoFuncionario.nome.trim();
+
+        if (!nome) {
             return;
         }
 
         const novo = {
             id: Date.now(),
-            nome: novoFuncionario.nome.trim().toUpperCase(),
+            nome: nome.toUpperCase(),
             departamento: novoFuncionario.departamento,
-            inicial: novoFuncionario.nome.trim()[0].toUpperCase(),
+            inicial: nome.charAt(0).toUpperCase(),
             cor: '#24577d',
             foto: null
         };
@@ -105,22 +162,43 @@ function Employee() {
             departamento: 'Vendas'
         });
 
+        // Limpa a pesquisa e o filtro para facilitar
+        // a visualização do funcionário recém-cadastrado.
+        setPesquisa('');
+        setFiltro('Todos');
+
         setModalAberto(false);
+
     }
 
-    // Exportação dos funcionários para CSV
+    // =========================================
+    // EXPORTAR FUNCIONÁRIOS PARA CSV
+    // =========================================
+
     function exportarRelatorio() {
-        const cabecalho = ['ID', 'Nome', 'Departamento'];
+
+        const cabecalho = [
+            'ID',
+            'Nome',
+            'Departamento'
+        ];
+
+        // Escapa aspas e envolve os valores em aspas.
+        function escaparCSV(valor) {
+            return `"${String(valor).replace(/"/g, '""')}"`;
+        }
 
         const linhas = funcionariosFiltrados.map((funcionario) => [
             funcionario.id,
-            `"${funcionario.nome.replace(/"/g, '""')}"`,
+            funcionario.nome,
             funcionario.departamento
         ]);
 
         const conteudo = [
-            cabecalho.join(';'),
-            ...linhas.map((linha) => linha.join(';'))
+            cabecalho.map(escaparCSV).join(';'),
+            ...linhas.map((linha) =>
+                linha.map(escaparCSV).join(';')
+            )
         ].join('\n');
 
         const arquivo = new Blob(
@@ -129,155 +207,204 @@ function Employee() {
         );
 
         const url = URL.createObjectURL(arquivo);
+
         const link = document.createElement('a');
 
         link.href = url;
         link.download = 'relatorio-funcionarios.csv';
-        link.click();
 
-        URL.revokeObjectURL(url);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        // Libera a URL depois de dar tempo ao navegador
+        // para iniciar o download.
+        setTimeout(() => {
+            URL.revokeObjectURL(url);
+        }, 1000);
+
     }
 
+    // =========================================
+    // RENDERIZAÇÃO
+    // =========================================
+
     return (
-        <div className="funcionarios-page">
+        <main className="funcionarios-conteudo">
 
-            {/* BARRA SUPERIOR */}
-            <Header />
+            {/* TÍTULO E BOTÕES */}
 
-                {/* MENU LATERAL */}
-                <Sidebar
-                    menuAberto={menuAberto}
-                    setMenuAberto={setMenuAberto}
-                />
+            <div className="funcionarios-cabecalho">
 
-            {/* CONTEÚDO PRINCIPAL */}
-            <main className="funcionarios-conteudo">
+                <div>
+                    <h1>FUNCIONÁRIOS</h1>
+                    <div className="titulo-linha"></div>
+                </div>
 
-                {/* TÍTULO E BOTÕES */}
-                <div className="funcionarios-cabecalho">
+                <div className="botoes-cabecalho">
 
-                    <div>
-                        <h1>FUNCIONÁRIOS</h1>
-                        <div className="titulo-linha"></div>
-                    </div>
+                    <button
+                        type="button"
+                        className="btn-exportar"
+                        onClick={exportarRelatorio}
+                    >
+                        <span aria-hidden="true">⇩</span>
+                        EXPORTAR RELATÓRIO
+                    </button>
 
-                    <div className="botoes-cabecalho">
-
-                        <button
-                            className="btn-exportar"
-                            onClick={exportarRelatorio}
-                        >
-                            <span>⇩</span>
-                            EXPORTAR RELATÓRIO
-                        </button>
-
-                        <button
-                            className="btn-novo-funcionario"
-                            onClick={() => setModalAberto(true)}
-                        >
-                            <span>＋</span>
-                            NOVO FUNCIONÁRIO
-                        </button>
-
-                    </div>
+                    <button
+                        type="button"
+                        className="btn-novo-funcionario"
+                        onClick={() => setModalAberto(true)}
+                    >
+                        <span aria-hidden="true">＋</span>
+                        NOVO FUNCIONÁRIO
+                    </button>
 
                 </div>
 
-                {/* LISTAGEM DOS FUNCIONÁRIOS */}
-                <section className="funcionarios-grid">
+            </div>
 
-                    {funcionariosFiltrados.length > 0 ? (
-                        funcionariosFiltrados.map((funcionario) => (
-                            <article
-                                className="funcionario-card"
-                                key={funcionario.id}
+            {/* PESQUISA */}
+
+            <div className="funcionarios-pesquisa">
+
+                <input
+                    type="search"
+                    placeholder="Buscar funcionário pelo nome..."
+                    aria-label="Buscar funcionário pelo nome"
+                    value={pesquisa}
+                    onChange={(e) => setPesquisa(e.target.value)}
+                />
+
+            </div>
+
+            {/* LISTAGEM DOS FUNCIONÁRIOS */}
+
+            <section className="funcionarios-grid">
+
+                {funcionariosFiltrados.length > 0 ? (
+
+                    funcionariosFiltrados.map((funcionario) => (
+
+                        <article
+                            className="funcionario-card"
+                            key={funcionario.id}
+                        >
+
+                            <div
+                                className="funcionario-avatar"
+                                style={{
+                                    backgroundColor: funcionario.cor
+                                }}
                             >
 
-                                <div
-                                    className="funcionario-avatar"
-                                    style={{
-                                        backgroundColor: funcionario.cor
-                                    }}
-                                >
-                                    {funcionario.foto ? (
-                                        <img
-                                            src={funcionario.foto}
-                                            alt={funcionario.nome}
-                                        />
-                                    ) : (
-                                        <span>
-                                            {funcionario.inicial}
-                                        </span>
-                                    )}
-                                </div>
+                                {funcionario.foto ? (
 
-                                <h3>{funcionario.nome}</h3>
+                                    <img
+                                        src={funcionario.foto}
+                                        alt={`Foto de ${funcionario.nome}`}
+                                    />
 
-                                <span className="departamento-tag">
-                                    {funcionario.departamento}
-                                </span>
+                                ) : (
 
-                            </article>
-                        ))
-                    ) : (
-                        <div className="nenhum-funcionario">
-                            Nenhum funcionário encontrado.
-                        </div>
-                    )}
+                                    <span>
+                                        {funcionario.inicial}
+                                    </span>
 
-                </section>
+                                )}
 
-                {/* TAGS RÁPIDAS */}
-                <section className="tags-rapidas">
+                            </div>
 
-                    <span className="tags-titulo">
-                        TAGS RÁPIDAS:
-                    </span>
+                            <h3>{funcionario.nome}</h3>
+
+                            <span className="departamento-tag">
+                                {funcionario.departamento}
+                            </span>
+
+                        </article>
+
+                    ))
+
+                ) : (
+
+                    <div className="nenhum-funcionario">
+                        Nenhum funcionário encontrado.
+                    </div>
+
+                )}
+
+            </section>
+
+            {/* TAGS RÁPIDAS */}
+
+            <section className="tags-rapidas">
+
+                <span className="tags-titulo">
+                    TAGS RÁPIDAS:
+                </span>
+
+                <button
+                    type="button"
+                    className={`tag-botao ${filtro === 'Todos' ? 'ativa' : ''}`}
+                    onClick={() => setFiltro('Todos')}
+                >
+                    Todos
+                </button>
+
+                {departamentos.map((departamento) => (
 
                     <button
-                        className={`tag-botao ${filtro === 'Todos' ? 'ativa' : ''}`}
-                        onClick={() => setFiltro('Todos')}
+                        key={departamento}
+                        type="button"
+                        className={`tag-botao ${
+                            filtro === departamento ? 'ativa' : ''
+                        }`}
+                        onClick={() => setFiltro(departamento)}
                     >
-                        Todos
+                        {departamento}
                     </button>
 
-                    {departamentos.map((departamento) => (
-                        <button
-                            key={departamento}
-                            className={`tag-botao ${
-                                filtro === departamento ? 'ativa' : ''
-                            }`}
-                            onClick={() => setFiltro(departamento)}
-                        >
-                            {departamento}
-                        </button>
-                    ))}
+                ))}
 
-                </section>
-
-            </main>
-
-            {/* RODAPÉ */}
-               <Footer />
+            </section>
 
             {/* MODAL DE CADASTRO */}
-            {modalAberto && (
-                <div className="modal-overlay">
 
-                    <div className="modal-funcionario">
+            {modalAberto && (
+
+                <div
+                    className="modal-overlay"
+                    onClick={() => setModalAberto(false)}
+                >
+
+                    <div
+                        className="modal-funcionario"
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="titulo-modal"
+                        onClick={(e) => e.stopPropagation()}
+                    >
 
                         <div className="modal-cabecalho">
-                            <h2>NOVO FUNCIONÁRIO</h2>
+
+                            <h2 id="titulo-modal">
+                                NOVO FUNCIONÁRIO
+                            </h2>
 
                             <button
                                 type="button"
+                                aria-label="Fechar cadastro"
                                 onClick={() => setModalAberto(false)}
                             >
                                 ×
                             </button>
+
                         </div>
 
                         <form onSubmit={cadastrarFuncionario}>
+
+                            {/* NOME */}
 
                             <label htmlFor="nome-funcionario">
                                 Nome completo
@@ -286,16 +413,15 @@ function Employee() {
                             <input
                                 id="nome-funcionario"
                                 type="text"
+                                name="nome"
                                 placeholder="Digite o nome do funcionário"
                                 value={novoFuncionario.nome}
-                                onChange={(e) =>
-                                    setNovoFuncionario({
-                                        ...novoFuncionario,
-                                        nome: e.target.value
-                                    })
-                                }
+                                onChange={atualizarCampo}
+                                autoFocus
                                 required
                             />
+
+                            {/* DEPARTAMENTO */}
 
                             <label htmlFor="departamento">
                                 Departamento
@@ -303,23 +429,25 @@ function Employee() {
 
                             <select
                                 id="departamento"
+                                name="departamento"
                                 value={novoFuncionario.departamento}
-                                onChange={(e) =>
-                                    setNovoFuncionario({
-                                        ...novoFuncionario,
-                                        departamento: e.target.value
-                                    })
-                                }
+                                onChange={atualizarCampo}
                             >
+
                                 {departamentos.map((departamento) => (
+
                                     <option
                                         key={departamento}
                                         value={departamento}
                                     >
                                         {departamento}
                                     </option>
+
                                 ))}
+
                             </select>
+
+                            {/* BOTÕES */}
 
                             <div className="modal-botoes">
 
@@ -345,10 +473,12 @@ function Employee() {
                     </div>
 
                 </div>
+
             )}
 
-        </div>
+        </main>
     );
+
 }
 
 export default Employee;

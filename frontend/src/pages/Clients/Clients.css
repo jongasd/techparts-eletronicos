@@ -1,32 +1,14 @@
 
 /* =========================================
    CONFIGURAÇÃO GERAL
-========================================= */
-
-.clients-layout {
-    width: 100%;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    background: #f2f3f5;
-    font-family: Arial, Helvetica, sans-serif;
-}
-
-.clients-corpo {
-    display: flex;
-    flex: 1;
-    width: 100%;
-    min-width: 0;
-    min-height: 0;
-}
+========================================== */
 
 .clients-page {
-    flex: 1;
     width: 100%;
     min-width: 0;
-    padding: 30px 40px;
     box-sizing: border-box;
     background: #f2f3f5;
+    font-family: Arial, Helvetica, sans-serif;
 }
 
 /* =========================================
@@ -598,10 +580,6 @@
 
 @media (max-width: 900px) {
 
-    .clients-page {
-        padding: 25px;
-    }
-
     .clients-conteudo {
         grid-template-columns: 1fr;
     }
@@ -627,10 +605,6 @@
 ========================================= */
 
 @media (max-width: 650px) {
-
-    .clients-page {
-        padding: 25px 18px;
-    }
 
     .clients-topo {
         flex-direction: column;
@@ -690,10 +664,6 @@
 ========================================= */
 
 @media (max-width: 400px) {
-
-    .clients-page {
-        padding: 20px 12px;
-    }
 
     .clients-campos-duplos {
         flex-direction: column;

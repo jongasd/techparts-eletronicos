@@ -1,15 +1,7 @@
 import { useState } from "react";
-
-import Header from "../../components/Header/Header";
-import Footer from "../../components/Footer/Footer";
-import Sidebar from "../../components/Sidebar/Sidebar";
-
 import "./Clients.css";
 
 function Clientes() {
-  // Controla a abertura e o fechamento da Sidebar
-  const [menuAberto, setMenuAberto] = useState(true);
-
   // Controla qual tela será exibida
   const [tela, setTela] = useState("lista");
 
@@ -84,14 +76,6 @@ function Clientes() {
 
   return (
     <div className="clients-layout">
-      {/* CABEÇALHO SUPERIOR */}
-      <Header />
-
-      {/* CORPO DA PÁGINA */}
-      <div className={`clients-corpo ${menuAberto ? "" : "sidebar-recolhida"}`}>
-        <Sidebar menuAberto={menuAberto} setMenuAberto={setMenuAberto} />
-
-        {/* CONTEÚDO PRINCIPAL */}
         <main className="clients-page">
           {tela === "lista" ? (
             <>
@@ -423,10 +407,6 @@ function Clientes() {
           )}
         </main>
       </div>
-
-      {/* RODAPÉ */}
-      <Footer />
-    </div>
   );
 }
 

@@ -110,12 +110,12 @@ function Login() {
                                 className="input-icon"
                             />
 
-                            <a
-                                href="#"
+                            <Link
+                                to="/recuperar-senha"
                                 className="forgot-password"
                             >
                                 Esqueceu a senha?
-                            </a>
+                            </Link>
 
                         </div>
 

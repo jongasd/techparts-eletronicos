@@ -45,7 +45,7 @@ login e cadastro - logo não fica centralizada no retângulo azul quando a tela 
 
 cadastro - a "Barra" divisora da esquerda fica maior; colocar limite de dígitos no cpf e no telefone; não deixar números negativos; não deixar adicionar + ou -; tirar as setas que aparecem para aumentar ou diminuir o número, permitindo apenas a digitação
 
-perfil - permitir apenas número no telefone
+perfil - permitir apenas número no telefone, diferenciar mais campos que podem e não podem ser alterados
 
 Layout - adicionar confirmação de encerrar sessão e abrir perfil quando clicar em perfil
 
@@ -57,8 +57,11 @@ Estoque - implementar função no "Filtros", habilitar pesquisa, implementar fun
 
 footer - centralizar textos quando a tela for pequena
 
+Clientes - texto "+ NOVO CLIENTE" bugado ao comprimir a página, filtrar não funciona
+|> ao clicar "Adicionar Imagem" após clicar em "+ NOVO CLIENTE" não funciona
+    |> dica de melhoria: automaticamente pegar a imagem do próprio email da pessoa
 
-
+Produtos - parte de estoque não aparece uma barra com a cor respectiva a falta de produto, cadastro de produto continua com nome do arquivo mesmo depois de ter removido, implementar editar e excluir como ações na tabela
 
 
 

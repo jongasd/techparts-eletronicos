@@ -1,7 +1,10 @@
 import icones from '../../assets/icones';
 import './Header.css';
+import { useNavigate } from 'react-router-dom';
 
 function Header() {
+    const navigate = useNavigate();
+
     return (
         <header className="dashboard-topbar">
             <div className="topbar-spacer" />
@@ -40,7 +43,7 @@ function Header() {
             <button
                 type="button"
                 className="topbar-profile"
-                onClick={() => console.log('Abrir perfil')}
+                onClick={() => navigate('/perfil')}
             >
                 <span>PERFIL</span>
                 <img
