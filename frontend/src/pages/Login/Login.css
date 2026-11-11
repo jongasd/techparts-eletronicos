@@ -487,6 +487,7 @@
    RESPONSIVIDADE
 ========================= */
 
+
 @media (max-width: 900px) {
 
     .login-page {
@@ -496,13 +497,26 @@
     .login-brand {
         width: 100%;
         min-height: 350px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .brand-content {
+        width: 100%;
+        padding: 40px 20px;
+        text-align: center;
+    }
+
+    .brand-content h1 {
+        font-size: clamp(20px, 4vw, 30px);
+        line-height: 1.2;
     }
 
     .login-area {
         width: 100%;
-
         min-height: auto;
-
         padding: 50px 20px;
     }
 
@@ -511,7 +525,6 @@
     }
 }
 
-
 @media (max-width: 500px) {
 
     .login-brand {
@@ -519,11 +532,16 @@
     }
 
     .brand-content {
-        padding-top: 40px;
+        padding: 30px 16px;
     }
 
     .brand-content h1 {
-        font-size: 23px;
+        font-size: 22px;
+    }
+
+    .brand-content p {
+        margin-top: 18px;
+        font-size: 17px;
     }
 
     .login-card {
@@ -533,4 +551,47 @@
     .login-footer {
         gap: 15px;
     }
+}
+
+/* BOTÃO DE VISIBILIDADE DA SENHA */
+
+.password-toggle {
+    position: absolute;
+    top: 50%;
+    right: 16px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0;
+    border: none;
+    background: transparent;
+
+    transform: translateY(-50%);
+    cursor: pointer;
+}
+
+.password-toggle img {
+    width: 21px;
+    height: 21px;
+    object-fit: contain;
+}
+
+/* LINK DE RECUPERAÇÃO */
+
+.forgot-password {
+    display: inline-block;
+
+    margin-top: 7px;
+
+    color: #064574;
+    font-size: 13px;
+    font-weight: 700;
+
+    text-decoration: none;
+}
+
+.forgot-password:hover {
+    text-decoration: underline;
 }

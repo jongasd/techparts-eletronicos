@@ -8,6 +8,60 @@ import chipIcon from '../../assets/chip-icon.png'
 import lockIcon from '../../assets/lock.png'
 import { apiRequest, getAuthToken } from '../../services/api'
 
+
+// Formata o CPF: 000.000.000-00
+function formatarCPF(valor) {
+    const numeros = valor.replace(/\D/g, '').slice(0, 11);
+
+    let formatado = numeros;
+
+    if (numeros.length > 3) {
+        formatado = numeros.slice(0, 3) + '.' + numeros.slice(3);
+    }
+
+    if (numeros.length > 6) {
+        formatado = numeros.slice(0, 3) + '.' +
+                    numeros.slice(3, 6) + '.' +
+                    numeros.slice(6);
+    }
+
+    if (numeros.length > 9) {
+        formatado = numeros.slice(0, 3) + '.' +
+                    numeros.slice(3, 6) + '.' +
+                    numeros.slice(6, 9) + '-' +
+                    numeros.slice(9);
+    }
+
+    return formatado;
+}
+
+
+// Formata o telefone: (00) 00000-0000
+function formatarTelefone(valor) {
+    const numeros = valor.replace(/\D/g, '').slice(0, 11);
+
+    if (numeros.length <= 2) {
+        return numeros.length ? `(${numeros}` : '';
+    }
+
+    const ddd = numeros.slice(0, 2);
+    const numero = numeros.slice(2);
+
+    if (numeros.length <= 10) {
+        if (numero.length <= 4) {
+            return `(${ddd}) ${numero}`;
+        }
+
+        return `(${ddd}) ${numero.slice(0, 4)}-${numero.slice(4)}`;
+    }
+
+    if (numero.length <= 5) {
+        return `(${ddd}) ${numero}`;
+    }
+
+    return `(${ddd}) ${numero.slice(0, 5)}-${numero.slice(5)}`;
+}
+
 function Register() {
     const [nome, setNome] = useState('')
     const [login, setLogin] = useState('')
@@ -17,8 +71,9 @@ function Register() {
     const [sucesso, setSucesso] = useState('')
     const [carregando, setCarregando] = useState(false)
 
+    
     async function cadastrar(e) {
-        e.preventDefault()
+        e.preventDefault();
 
         setErro('')
         setSucesso('')
@@ -48,9 +103,10 @@ function Register() {
         } catch (error) {
             setErro(error.message || 'Não foi possível criar o acesso.')
         } finally {
-            setCarregando(false)
+            setCarregando(false);
         }
     }
+
 
     return (
         <div className="register-page">
@@ -131,7 +187,7 @@ function Register() {
                             </div>
 
                             <div className="input-container">
-
+                                
                                 <input
                                     type="text"
                                     id="login"

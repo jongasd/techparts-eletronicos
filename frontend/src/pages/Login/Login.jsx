@@ -110,24 +110,23 @@ function Login() {
 
                     </div>
 
+                    
                     {/* Senha */}
                     <div className="mb-3">
 
                         <div className="password-label">
-
                             <label
                                 htmlFor="senha"
                                 className="form-label"
                             >
                                 SENHA
                             </label>
-
                         </div>
 
                         <div className="input-container">
 
                             <input
-                                type="password"
+                                type={mostrarSenha ? "text" : "password"}
                                 id="senha"
                                 className="form-control login-input"
                                 placeholder="••••••••"
@@ -137,20 +136,26 @@ function Login() {
                                 required
                             />
 
-                            <img
-                                src={icones.visibilidade}
-                                alt=""
-                                className="input-icon"
-                            />
-
-                            <Link
-                                to="/recuperar-senha"
-                                className="forgot-password"
+                            <button
+                                type="button"
+                                className="password-toggle"
+                                onClick={() => setMostrarSenha(!mostrarSenha)}
+                                aria-label={mostrarSenha ? "Ocultar senha" : "Mostrar senha"}
                             >
-                                Esqueceu a senha?
-                            </Link>
+                                <img
+                                    src={icones.visibilidade}
+                                    alt=""
+                                />
+                            </button>
 
                         </div>
+
+                        <Link
+                            to="/recuperar-senha"
+                            className="forgot-password"
+                        >
+                            Esqueceu a senha?
+                        </Link>
 
                     </div>
 

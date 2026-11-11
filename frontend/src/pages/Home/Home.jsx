@@ -44,14 +44,6 @@ function Home() {
                         />
                     </button>
 
-                    <button type="button" aria-label="Configurações">
-                        <img
-                            src={icones.configuracoes}
-                            alt=""
-                            className="header-icon-image"
-                        />
-                    </button>
-
                     <button type="button" aria-label="Ajuda">
                         <img
                             src={icones.ajuda}
