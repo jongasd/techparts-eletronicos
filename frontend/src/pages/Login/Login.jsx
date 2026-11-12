@@ -15,6 +15,7 @@ function Login() {
     const [lembrar, setLembrar] = useState(false)
     const [erro, setErro] = useState('')
     const [carregando, setCarregando] = useState(false)
+    const [mostrarSenha, setMostrarSenha] = useState(false)
 
     async function entrar(event) {
         event.preventDefault()
