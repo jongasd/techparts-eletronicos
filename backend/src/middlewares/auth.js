@@ -12,6 +12,9 @@ const auth = (req, res, next) => {
 
   try {
     const payload = jwt.verify(token, process.env.JWT_SECRET);
+    if (payload.nome_role !== "admin") {
+      return next(new AppError("Token de administrador inválido", 401));
+    }
     req.funcionario = payload; // { id_funcionario, login, iat, exp }
     next();
   } catch (erro) {

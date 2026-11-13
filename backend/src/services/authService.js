@@ -50,7 +50,12 @@ const authService = {
       funcionario?.senha_hash ?? HASH_PLACEHOLDER,
     );
 
-    if (!funcionario || !funcionario.ativo || !senhaConfere) {
+    if (
+      !funcionario ||
+      !funcionario.ativo ||
+      !senhaConfere ||
+      funcionario.nome_role !== "admin"
+    ) {
       throw new AppError("Login ou senha inválidos", 401);
     }
 
@@ -60,6 +65,7 @@ const authService = {
       id_funcionario: funcionario.id_funcionario,
       login: funcionario.login,
       id_role: funcionario.id_role,
+      nome_role: funcionario.nome_role,
       permissoes, // ["produtos:criar", "produtos:visualizar", ...]
     };
 

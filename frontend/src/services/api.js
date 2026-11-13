@@ -1,11 +1,32 @@
 const API_URL = (
     import.meta.env.VITE_API_URL ||
-    "https://techparts-eletronicos.onrender.com"
+    (import.meta.env.DEV
+        ? "http://localhost:3000"
+        : "https://techparts-eletronicos.onrender.com")
 ).replace(/\/+$/, "");
 
 export function getAuthToken() {
     return localStorage.getItem("techparts_token") ||
         sessionStorage.getItem("techparts_token");
+}
+
+export function hasAdminSession() {
+    const token = getAuthToken();
+    if (!token) return false;
+
+    try {
+        const partes = token.split(".");
+        if (partes.length !== 3) throw new Error("Token inválido");
+        const base64 = partes[1].replace(/-/g, "+").replace(/_/g, "/");
+        const payload = JSON.parse(atob(base64.padEnd(Math.ceil(base64.length / 4) * 4, "=")));
+        if (payload.nome_role === "admin") return true;
+    } catch {
+        clearAuthToken();
+        return false;
+    }
+
+    clearAuthToken();
+    return false;
 }
 
 export function saveAuthToken(token, remember) {

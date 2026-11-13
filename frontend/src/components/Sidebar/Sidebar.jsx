@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 
 import icones from '../../assets/icones';
-import Confirmacao from '../Confirmacao/Confirmacao';
+import Exit from '../Exit/Exit';
 
 import './Sidebar.css';
 
@@ -96,7 +96,7 @@ function Sidebar({ menuAberto, setMenuAberto }) {
             {/* POP-UP DE CONFIRMAÇÃO */}
 
             {mostrarConfirmacao && (
-                <Confirmacao
+                <Exit
                     titulo="Encerrar sessão?"
                     mensagem="Tem certeza de que deseja sair da sua conta? Você precisará entrar novamente para acessar o sistema."
                     aoConfirmar={encerrarSessao}

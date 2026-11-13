@@ -1,7 +1,7 @@
 
-import './Confirmacao.css';
+import './Exit.css';
 
-function Confirmacao({ titulo, mensagem, aoConfirmar, aoCancelar }) {
+function Exit({ titulo, mensagem, aoConfirmar, aoCancelar }) {
     return (
         <div className="confirmacao-overlay">
             <div
@@ -44,4 +44,4 @@ function Confirmacao({ titulo, mensagem, aoConfirmar, aoCancelar }) {
     );
 }
 
-export default Confirmacao;
+export default Exit;

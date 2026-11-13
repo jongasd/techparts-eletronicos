@@ -36,7 +36,11 @@ const Funcionario = {
   // Usado só internamente pelo authService pra comparar a senha no login.
   findByLoginComSenha: async (login) => {
     const resultado = await executarQuery(
-      "SELECT id_funcionario, nome_funcionario, login, senha_hash, ativo, id_role FROM tbl_funcionario WHERE login = ?",
+      `SELECT f.id_funcionario, f.nome_funcionario, f.login, f.senha_hash,
+              f.ativo, f.id_role, r.nome_role
+       FROM tbl_funcionario f
+       INNER JOIN tbl_roles r ON r.id_role = f.id_role
+       WHERE f.login = ?`,
       [login],
     );
     return resultado[0] ?? null;

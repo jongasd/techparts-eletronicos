@@ -94,7 +94,7 @@ No Windows, a API pode ser iniciada na raiz do repositório com `npm --prefix ba
 
 Para bancos criados antes dos campos de contato de clientes, execute `npm --prefix backend run migrate:clientes-contatos` uma vez antes do deploy. A migração é idempotente e preserva os registros existentes.
 
-Se você esqueceu a senha do administrador **local**, execute `npm --prefix backend run reset:admin-local` em um terminal interativo; a senha digitada fica oculta. Se o terminal não aceitar entrada, use `npm --prefix backend run reset:admin-local -- --generate`: ele cria uma senha aleatória e a grava em `backend/.local-admin-credentials.txt`, ignorado pelo Git. O comando aceita apenas bancos em `localhost` e altera somente o login `admin`; isso não redefine a senha do Render.
+Para criar ou redefinir a conta do administrador **local**, execute `npm --prefix backend run reset:admin-local` em um terminal interativo; a senha digitada fica oculta. Se o terminal não aceitar entrada, use `npm --prefix backend run reset:admin-local -- --generate`: ele cria uma senha aleatória e a grava em `backend/.local-admin-credentials.txt`, ignorado pelo Git. O comando aceita apenas bancos em `localhost` e altera somente o login `admin`; isso não altera a conta do Render.
 
 Problemas conhecidos neste setup (schema base e usuário `admin`): veja [README-PENDENCIAS.md](./README-PENDENCIAS.md).
 

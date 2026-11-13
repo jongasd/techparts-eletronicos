@@ -98,6 +98,7 @@ describe("authService", () => {
         ativo: 1,
         senha_hash: "hash-real",
         id_role: 2,
+        nome_role: "admin",
       });
       bcrypt.compare.mockResolvedValue(true);
       pool.query.mockResolvedValue([
@@ -115,6 +116,7 @@ describe("authService", () => {
           id_funcionario: 1,
           login: "joao",
           id_role: 2,
+          nome_role: "admin",
           permissoes: ["produtos:criar", "produtos:visualizar"],
         }),
         "segredo-de-teste",
@@ -128,6 +130,25 @@ describe("authService", () => {
           login: "joao",
         },
       });
+    });
+
+    test("rejeita funcionário que não seja administrador mesmo com senha correta", async () => {
+      Funcionario.findByLoginComSenha.mockResolvedValue({
+        id_funcionario: 2,
+        nome_funcionario: "Joao",
+        login: "joao",
+        ativo: 1,
+        senha_hash: "hash-real",
+        id_role: 3,
+        nome_role: "funcionario",
+      });
+      bcrypt.compare.mockResolvedValue(true);
+
+      await expect(authService.login("joao", "senha123")).rejects.toMatchObject({
+        statusCode: 401,
+      });
+      expect(jwt.sign).not.toHaveBeenCalled();
+      expect(pool.query).not.toHaveBeenCalled();
     });
   });
 

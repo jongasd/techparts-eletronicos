@@ -50,17 +50,24 @@ async function redefinirSenhaAdminLocal() {
     throw new Error("Por segurança, este comando só funciona com MySQL local.");
   }
 
+  const [roles] = await pool.query(
+    "SELECT id_role FROM tbl_roles WHERE nome_role = ? LIMIT 1",
+    ["admin"],
+  );
+  if (!roles[0]) {
+    throw new Error("O papel admin não existe neste banco local.");
+  }
+
   const [funcionarios] = await pool.query(
-    `SELECT f.id_funcionario
+    `SELECT f.id_funcionario, f.id_role, r.nome_role
      FROM tbl_funcionario f
      INNER JOIN tbl_roles r ON r.id_role = f.id_role
-     WHERE f.login = ? AND f.ativo = 1 AND r.nome_role = 'admin'
+     WHERE f.login = ?
      LIMIT 1`,
     ["admin"],
   );
-
-  if (!funcionarios[0]) {
-    throw new Error("Não existe um funcionário admin ativo neste banco local.");
+  if (funcionarios[0] && funcionarios[0].nome_role !== "admin") {
+    throw new Error("O login admin já está associado a outro papel.");
   }
 
   const gerarSenha = process.argv.includes("--generate");
@@ -91,10 +98,17 @@ async function redefinirSenhaAdminLocal() {
 
   const hash = await bcrypt.hash(senha, 12);
   try {
-    await pool.query(
-      "UPDATE tbl_funcionario SET senha_hash = ? WHERE id_funcionario = ?",
-      [hash, funcionarios[0].id_funcionario],
-    );
+    if (funcionarios[0]) {
+      await pool.query(
+        "UPDATE tbl_funcionario SET senha_hash = ?, ativo = 1 WHERE id_funcionario = ?",
+        [hash, funcionarios[0].id_funcionario],
+      );
+    } else {
+      await pool.query(
+        "INSERT INTO tbl_funcionario (nome_funcionario, login, senha_hash, id_role, ativo) VALUES (?, ?, ?, ?, 1)",
+        ["Administrador", "admin", hash, roles[0].id_role],
+      );
+    }
   } catch (erro) {
     if (arquivoSenha) await fs.unlink(arquivoSenha).catch(() => {});
     throw erro;
@@ -103,7 +117,7 @@ async function redefinirSenhaAdminLocal() {
   const resultadoLogin = await authService.login("admin", senha);
   console.log("Login local verificado:", Boolean(resultadoLogin.token));
   if (arquivoSenha) {
-    console.log("Credencial temporária salva em backend/.local-admin-credentials.txt");
+    console.log("Credencial local salva em backend/.local-admin-credentials.txt");
   } else {
     console.log("Senha local do login admin redefinida.");
   }
