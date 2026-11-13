@@ -6,8 +6,8 @@ import { useState } from 'react'
 import icones from '../../assets/icones' 
 
 import chipImage from '../../assets/chip.png'
-import { apiRequest, saveAuthToken } from '../../services/api'
-
+/* import { apiRequest, saveAuthToken } from '../../services/api'
+ */
 function Login() {
     const navigate = useNavigate()
     const [login, setLogin] = useState('')
@@ -17,7 +17,7 @@ function Login() {
     const [carregando, setCarregando] = useState(false)
     const [mostrarSenha, setMostrarSenha] = useState(false)
 
-    async function entrar(event) {
+/*     async function entrar(event) {
         event.preventDefault()
         setErro('')
         setCarregando(true)
@@ -35,6 +35,13 @@ function Login() {
         } finally {
             setCarregando(false)
         }
+    } */
+
+    
+    function entrar(event) {
+        event.preventDefault()
+
+        navigate('/home')
     }
 
     return (
