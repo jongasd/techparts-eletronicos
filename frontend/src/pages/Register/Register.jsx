@@ -283,8 +283,8 @@ function Register() {
                         <br/>
 
                         <p className="register-text">
-                            <Link to={"/"}>
-                                Voltar ao login
+                            <Link to={"/funcionarios"} className="register-back-link">
+                                Voltar
                             </Link>
                         </p>
                     </form>

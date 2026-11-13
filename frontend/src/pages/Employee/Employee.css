@@ -25,18 +25,24 @@
     margin-bottom: 30px;
 }
 
-.funcionarios-cabecalho h1 {
-    color: #073b60;
-    font-size: 36px;
-    font-weight: bold;
+.employee-title {
+    position: relative;
     margin: 0;
+    padding-bottom: 12px;
+    color: var(--azul-escuro);
+    font-size: 36px;
+    font-weight: 700;
 }
 
-.titulo-linha {
+.employee-title::after {
+    position: absolute;
+    bottom: 0;
+    left: 0;
     width: 98px;
     height: 6px;
-    background-color: #073b60;
-    margin-top: 7px;
+    background: var(--azul-escuro);
+    border-radius: 5px;
+    content: '';
 }
 
 .botoes-cabecalho {
@@ -58,7 +64,7 @@
 }
 
 .btn-exportar {
-    background-color: #e0e2e4;
+    background-color: #ffffff;
     color: #222;
 }
 

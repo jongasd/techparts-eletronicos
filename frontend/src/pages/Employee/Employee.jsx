@@ -127,7 +127,7 @@ function Employee() {
             <div className="funcionarios-cabecalho">
 
                 <div>
-                    <h1>FUNCIONÁRIOS</h1>
+                    <h1 className="employee-title">FUNCIONÁRIOS</h1>
                     <div className="titulo-linha"></div>
                 </div>
 
@@ -138,7 +138,6 @@ function Employee() {
                         className="btn-exportar"
                         onClick={exportarRelatorio}
                     >
-                        <span aria-hidden="true">⇩</span>
                         EXPORTAR RELATÓRIO
                     </button>
 

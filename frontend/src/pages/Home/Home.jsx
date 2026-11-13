@@ -36,21 +36,6 @@ function Home() {
                         />
                     </button>
 
-                    <button type="button" aria-label="Notificações">
-                        <img
-                            src={icones.notificacoes}
-                            alt=""
-                            className="header-icon-image"
-                        />
-                    </button>
-
-                    <button type="button" aria-label="Ajuda">
-                        <img
-                            src={icones.ajuda}
-                            alt=""
-                            className="header-icon-image"
-                        />
-                    </button>
                 </nav>
             </header>
 
@@ -91,13 +76,7 @@ function Home() {
 
             {/* Rodapé */}
             <footer className="home-footer">
-                <span>© 2026 Corporate Precision Systems</span>
-
-                <nav aria-label="Links institucionais">
-                    <a href="#privacidade">Privacy Policy</a>
-                    <a href="#termos">Terms of Service</a>
-                    <a href="#suporte">Contact Support</a>
-                </nav>
+                <span>© 2026 TECHPARTS ELETRÔNICOS</span>
             </footer>
 
         </div>

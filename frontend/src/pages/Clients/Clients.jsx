@@ -92,7 +92,7 @@ function Clientes() {
               {/* CABEÇALHO DA LISTAGEM */}
               <div className="clients-topo">
                 <div className="clients-titulo">
-                  <h1>CLIENTES</h1>
+                  <h1 className="clients-title">CLIENTES</h1>
                   <div className="clients-linha-titulo"></div>
                 </div>
 

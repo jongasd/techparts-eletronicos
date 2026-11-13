@@ -83,6 +83,7 @@ function Dashboard() {
 
     return (
         <>
+            <h1 className="stock-title">DASHBOARD</h1>
             {erro && <p className="dashboard-error" role="alert">{erro}</p>}
             {/* INDICADORES */}
             <section className="metrics-grid" aria-label="Indicadores gerais">

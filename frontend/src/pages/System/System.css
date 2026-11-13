@@ -16,15 +16,26 @@
     align-items: center;
     justify-content: space-between;
     gap: 16px;
-    padding: 8px;
 }
 
-.system-heading h1 {
+.system-title {
+    position: relative;
     margin: 0;
+    padding-bottom: 12px;
     color: var(--azul-escuro);
     font-size: 36px;
     font-weight: 700;
-    letter-spacing: -1.5px;
+}
+
+.system-title::after {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 98px;
+    height: 6px;
+    background: var(--azul-escuro);
+    border-radius: 5px;
+    content: '';
 }
 
 .system-heading span {
@@ -87,7 +98,7 @@
     line-height: 1.7;
 }
 
-.system-maintenance button {
+.system-maintenance > button {
     min-height: 48px;
     margin-top: auto;
     color: var(--azul-escuro);
@@ -100,7 +111,7 @@
     transition: background 0.2s ease;
 }
 
-.system-maintenance button:hover {
+.system-maintenance > button:hover {
     background: #dceaf5;
 }
 
@@ -228,6 +239,27 @@
     .system-integrations button {
         width: 100%;
     }
+
+    .system-chart {
+        height: 210px;
+        margin-top: 20px;
+    }
+
+    .system-chart-bar-container {
+        height: 155px;
+    }
+
+    .system-chart-bars {
+        gap: 5px;
+    }
+
+    .system-chart-column span {
+        font-size: 11px;
+    }
+
+    .system-chart-bar {
+        width: 85%;
+    }
 }
 
 /* ===== ÍCONES ===== */
@@ -276,4 +308,245 @@
     align-items: center;
     gap: 32px;
     min-width: 0;
+}
+
+/* ===== GRÁFICO DE DESEMPENHO ===== */
+
+.system-chart {
+    display: flex;
+    align-items: flex-end;
+    width: 100%;
+    height: 250px;
+    margin-top: 25px;
+}
+
+.system-chart-bars {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-around;
+    gap: 12px;
+    width: 100%;
+    height: 100%;
+}
+
+.system-chart-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+}
+
+.system-chart-bar-container {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    width: 100%;
+    height: 190px;
+}
+
+.system-chart-bar {
+    width: 75%;
+    max-width: 75px;
+    background: #e6f2fa;
+    border-radius: 2px 2px 0 0;
+    transition: height 0.3s ease;
+}
+
+.system-chart-bar.highlight {
+    background: var(--azul-escuro);
+}
+
+.system-chart-column span {
+    color: #68717e;
+    font-size: 13px;
+}
+
+/* ===== CALENDÁRIO DE VERIFICAÇÃO ===== */
+
+.system-calendar {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 18px;
+    color: var(--azul-escuro);
+    background: #fff;
+    border-radius: 12px;
+}
+
+/* Cabeçalho */
+
+.system-calendar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.system-calendar-header strong {
+    font-size: 15px;
+    text-transform: capitalize;
+}
+
+.system-calendar-header button {
+    min-height: 32px;
+    width: 32px;
+    margin: 0;
+    padding: 0;
+    color: var(--azul-escuro);
+    background: #edf3f8;
+    border: none;
+    border-radius: 6px;
+    font-size: 22px;
+    cursor: pointer;
+}
+
+.system-calendar-header button:hover {
+    background: #c7e6f5;
+}
+
+/* Grade do calendário */
+
+.system-calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 5px;
+    text-align: center;
+}
+
+.system-weekday {
+    padding: 7px 0;
+    color: #8493a5;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.system-calendar-day {
+    display: grid;
+    width: 100%;
+    aspect-ratio: 1;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    color: #34465a;
+    background: transparent;
+    border: none;
+    border-radius: 50%;
+    font-size: 13px;
+    cursor: pointer;
+    place-items: center;
+    transition: background 0.2s ease;
+}
+
+.system-calendar-day:hover:not(:disabled) {
+    background: #e6f2fa;
+}
+
+.system-calendar-day.selected {
+    color: var(--azul-escuro);
+    background: #c7e6f5;
+    font-weight: 700;
+}
+
+.system-calendar-day.today:not(.selected) {
+    border: 1px solid #8bbbd8;
+}
+
+.system-calendar-day:disabled {
+    color: #cbd2da;
+    cursor: not-allowed;
+}
+
+/* Escolha do horário */
+
+.system-calendar-time {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.system-calendar-time label {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.system-calendar-time input {
+    width: 100%;
+    min-height: 42px;
+    padding: 8px 12px;
+    color: var(--azul-escuro);
+    background: #f5f8fb;
+    border: 1px solid #dce4ed;
+    border-radius: 7px;
+    font-size: 14px;
+}
+
+.system-calendar-time span {
+    color: #8493a5;
+    font-size: 11px;
+}
+
+/* Botão de agendamento */
+
+.system-calendar .system-calendar-confirm {
+    width: 100%;
+    min-height: 42px;
+    margin: 0;
+    padding: 10px;
+    color: #fff;
+    background: var(--azul-escuro);
+    border: none;
+    border-radius: 7px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.system-calendar .system-calendar-confirm:hover {
+    background: var(--azul-medio);
+}
+
+.system-calendar .system-calendar-confirm:disabled {
+    background: #aab8c7;
+    cursor: not-allowed;
+}
+
+/* Informações do agendamento */
+
+.system-scheduled-info {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.system-scheduled-info p {
+    margin: 0;
+    color: #fff;
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+.system-scheduled-info span {
+    color: #a9c5e1;
+    font-size: 12px;
+}
+
+/* Concluir verificação */
+
+.system-maintenance .system-complete-button {
+    min-height: 38px;
+    margin: 5px 0;
+    padding: 8px;
+    color: var(--azul-escuro);
+    background: #c7e6f5;
+    border: none;
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.system-maintenance .system-complete-button:hover {
+    background: #a9d7ed;
 }

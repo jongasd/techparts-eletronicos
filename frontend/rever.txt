@@ -39,20 +39,12 @@ problemas techparts front
 
 problemas techparts front   
 
-Layout - adicionar confirmação de encerrar sessão (confirmar se funcionou), arrumar responsividade do tablet-sidebar, centralizar textos do footer quando a tela for pequena.
-
-Sistema - ver o que o botão "configurar" deveria mostrar e implementar função calendário em "agendar verificação", gráfico no "Desempenho Global do Sistema"
-|> "Agendar verificação" > abrir calendário > mover pelo calendário > clicar em um dia (bola azul claro no dia clicado) > colocar horário (GMT-3) "horário de brasília" > "agendar" > dia fica agendado e o texto muda para "Próxima verificação em X dias às HH:MM"
-
-Estoque - implementar função no "Filtros", habilitar pesquisa, implementar função de visibilidade, diminuir o campo de pesquisa para "Filtros" ficarem do lado quando a tela for menor e implementar função de editar
-|> ao clicar no lápis para editar, navega para "/produto/{id}"
+Layout - arrumar responsividade do tablet-sidebar
 
 Clientes - texto "+ NOVO CLIENTE" bugado ao comprimir a página, filtrar não funciona, começar a lista de clientes com o cliente no começo e não no meio, colocar o grafico de INSIGHTS TECH ao lado do texto (tela grande) e centralizado acima do texto (tela menor)
 |> ao clicar "Adicionar Imagem" após clicar em "+ NOVO CLIENTE" não funciona, telefone só números, cpf só números
 
-Produtos - parte de estoque não aparece uma barra com a cor respectiva a falta de produto, cadastro de produto continua com nome do arquivo mesmo depois de ter removido, implementar editar e excluir como ações na tabela, padronizar tamanho da tabela(títulos se deslocam ao trocar) 
-
-Dashboard - colocar título dashboard
+Produtos - padronizar tamanho da tabela(títulos se deslocam ao trocar) 
 
 Funcionários - diminuir botões (padronizar com telas anteriores - Agatha), alterar cor de "exportar relatório", ao comprimir a página impedir que a fonte de "Funcionários" diminua
 

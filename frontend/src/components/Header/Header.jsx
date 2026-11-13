@@ -22,22 +22,6 @@ function Header() {
                 />
             </label>
 
-            <button
-                type="button"
-                className="topbar-icon"
-                aria-label="Notificações"
-            >
-                <img src={icones.notificacoes} alt="" />
-            </button>
-
-            <button
-                type="button"
-                className="topbar-icon"
-                aria-label="Ajuda"
-            >
-                <img src={icones.ajuda} alt="" />
-            </button>
-
             <div className="topbar-divider" />
 
             <button

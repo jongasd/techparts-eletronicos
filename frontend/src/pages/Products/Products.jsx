@@ -310,7 +310,7 @@ function Products() {
             {/* CABEÇALHO DA PÁGINA */}
             <div className="products-topo">
 
-                <h1>PRODUTOS</h1>
+                <h1 className="products-title">PRODUTOS</h1>
 
                 <div className="products-acoes">
 

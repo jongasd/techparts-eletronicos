@@ -23,18 +23,24 @@
     margin-bottom: 38px;
 }
 
-.clients-titulo h1 {
-    color: #063b60;
-    font-size: 34px;
-    font-weight: 800;
+.clients-title {
+    position: relative;
     margin: 0;
+    padding-bottom: 12px;
+    color: var(--azul-escuro);
+    font-size: 36px;
+    font-weight: 700;
 }
 
-.clients-linha-titulo {
-    width: 101px;
-    height: 5px;
-    background: #063b60;
-    margin-top: 5px;
+.clients-title::after {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 98px;
+    height: 6px;
+    background: var(--azul-escuro);
+    border-radius: 5px;
+    content: '';
 }
 
 .clients-botoes {

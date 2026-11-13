@@ -23,11 +23,24 @@
     margin-bottom: 28px;
 }
 
-.products-topo h1 {
+.products-title {
+    position: relative;
     margin: 0;
-    color: #063b60;
-    font-size: 34px;
-    font-weight: 800;
+    padding-bottom: 12px;
+    color: var(--azul-escuro);
+    font-size: 36px;
+    font-weight: 700;
+}
+
+.products-title::after {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 98px;
+    height: 6px;
+    background: var(--azul-escuro);
+    border-radius: 5px;
+    content: '';
 }
 
 .products-acoes {
@@ -416,10 +429,6 @@
 
 @media (max-width: 900px) {
 
-    .products-topo h1 {
-        font-size: 30px;
-    }
-
     .products-tabela th {
         padding: 16px 12px;
     }
@@ -436,10 +445,6 @@
     .products-topo {
         flex-direction: column;
         align-items: flex-start;
-    }
-
-    .products-topo h1 {
-        font-size: 26px;
     }
 
     .products-acoes {
